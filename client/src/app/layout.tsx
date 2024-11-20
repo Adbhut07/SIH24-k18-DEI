@@ -33,7 +33,7 @@ export default function RootLayout({
       <body
         className={`${manrope.className} bg-white dark:bg-[#171717]`}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider attribute="class"  enableSystem={false} disableTransitionOnChange>
         {children}
         </ThemeProvider>
         
