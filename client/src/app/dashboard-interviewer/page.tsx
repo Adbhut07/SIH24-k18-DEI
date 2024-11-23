@@ -1,3 +1,4 @@
+'use client';
 import { Navbar } from "@/components/interviewer/navbar"
 import { UpcomingInterviews } from "@/components/interviewer/upcoming-interviews"
 import { RecentInterviews } from "@/components/interviewer/recent-interviews"
@@ -6,6 +7,7 @@ import { InterviewHistory } from "@/components/interviewer/interview-history"
 import { PerformanceCard } from "@/components/interviewer/performance-card"
 
 export default function DashboardPage() {
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

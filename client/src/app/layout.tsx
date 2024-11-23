@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/theme";
+import StoreProvider from "./StoreProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,10 +34,9 @@ export default function RootLayout({
       <body
         className={`${manrope.className} bg-white dark:bg-[#171717]`}
       >
-        <ThemeProvider attribute="class"  enableSystem={false} disableTransitionOnChange>
-        {children}
+        <ThemeProvider attribute="class" enableSystem={false} disableTransitionOnChange>
+          <StoreProvider>{children}</StoreProvider>
         </ThemeProvider>
-        
       </body>
     </html>
   );
