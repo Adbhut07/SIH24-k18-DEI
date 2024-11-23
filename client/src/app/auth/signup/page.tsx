@@ -238,7 +238,7 @@ export default function Signup() {
     console.log(values)
     setTimeout(() => {
       setIsLoading(false)
-      router.push("/signup-success")
+      router.push("/dashboard-candidate")
     }, 3000)
   }
 
@@ -247,11 +247,13 @@ export default function Signup() {
 
 
 
-
-
       <Card className="max-w-lg mx-auto">
+     
         <CardHeader>
-          <CardTitle className="text-lg">Sign Up for <span className="font-bold text-blue-500">DRDO Interview </span></CardTitle>
+          <CardTitle className="text-lg">Sign Up for <span className="font-bold text-blue-500">DRDO Interview </span>
+          <a href="/" className="ml-[200px] text-sm hover:cursor-pointer hover:text-blue-500">Home</a>
+        
+          </CardTitle>
           <CardDescription>Create your account to get started</CardDescription>
         </CardHeader>
         <CardContent>

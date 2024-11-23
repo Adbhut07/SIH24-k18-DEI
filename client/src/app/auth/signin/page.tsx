@@ -77,7 +77,10 @@ export default function SignIn() {
 
   return (
 
-    <div className='container flex items-center justify-center min-h-screen py-12'>
+    <div className='container flex justify-center items-center min-h-screen py-12 '>
+
+
+
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className='font-bold text-lg'>Sign In</CardTitle>

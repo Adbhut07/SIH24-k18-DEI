@@ -21,6 +21,7 @@ export default function InterviewBoardroom() {
   const [currentQuestion, setCurrentQuestion] = useState("")
   const [totalMarks, setTotalMarks] = useState(0)
   const [answeredQuestions, setAnsweredQuestions] = useState([])
+  
 
   const handleAskQuestion = (question) => {
     setCurrentQuestion(question)
