@@ -5,6 +5,8 @@ import "dotenv/config";
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import errorHandler from './utils/errorHandler';
+import interviewRoutes from './routes/interview.route';
+import candidateRoutes from './routes/candidate.route';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -17,6 +19,8 @@ app.use(errorHandler);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/interview', interviewRoutes);
+app.use('/api/v1/candidate', candidateRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, world!');

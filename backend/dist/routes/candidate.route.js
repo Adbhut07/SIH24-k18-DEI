@@ -4,9 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const auth_controller_1 = require("../controllers/auth/auth.controller");
+const candidate_controller_1 = require("../controllers/candidate/candidate.controller");
+const auth_middleware_1 = require("../utils/auth.middleware");
 const router = express_1.default.Router();
-// Public routes
-router.post("/signup", auth_controller_1.signup);
-router.post("/signin", auth_controller_1.signin);
+router.get("/:userId/interviews", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(["CANDIDATE", "ADMIN"]), candidate_controller_1.getCandidateInterviews);
 exports.default = router;
