@@ -130,3 +130,111 @@ export const deleteUser = async (req: Request, res: Response):Promise<any> => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+const getAllUsersQuerySchema = zod.object({
+  role: zod.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), // Role is optional
+});
+
+export const getAllUsers = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const query = getAllUsersQuerySchema.parse(req.query);
+
+    const whereCondition = query.role ? { role: query.role } : undefined;
+
+    const users = await prisma.user.findMany({
+      where: whereCondition,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.error("Error in getAllUsers:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const getUserByEmail = async (req: Request, res: Response):Promise<any> => {
+  try {
+    const { email } = req.body;
+    if(!email){
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error in getUserByEmail:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
+export const getUserById = async (req: Request, res: Response):Promise<any> => {
+  try { 
+    const { id } = req.params;
+    if(!id){
+      return res.status(400).json({
+        success: false,
+        message: "Id is required",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error in getUserById:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
