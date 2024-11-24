@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import zod from "zod";
-import { promises } from "dns";
+import generateTokenAndSetCookie from "../../utils/generateTokenAndSetCookie";
 
 const prisma = new PrismaClient();
 
@@ -130,29 +130,12 @@ export const signin = async (req: Request, res: Response): Promise<any> => {
       });
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
-
-    if (JWT_SECRET === "default-secret-key" && process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET environment variable is not set!");
-    }
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: "24h",
-    });
-
-    const { password: _, ...userWithoutPassword } = user;
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        user: userWithoutPassword,
-        token,
-      },
-      message: "Signed in successfully",
-    });
+    generateTokenAndSetCookie(user, res);
   } catch (error) {
-    console.error("Error in signin controller", (error as Error).message);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error" });
+    console.error("Error in signin controller:", (error as Error).message);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
