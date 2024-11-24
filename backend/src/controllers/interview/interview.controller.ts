@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
 
@@ -13,15 +14,6 @@ const createInterviewSessionSchema = z.object({
     message: "Scheduled date must be a valid ISO date",
   }),
   usePredefined: z.boolean().optional(),
-  rounds: z.array(
-    z.object({
-      name: z.string().nonempty("Round name is required"),
-      scheduledAt: z.string().refine((date) => !isNaN(Date.parse(date)), {
-        message: "Scheduled date for round must be a valid ISO date",
-      }),
-      details: z.string().optional(),
-    })
-  ).nonempty("At least one round is required"),
 });
 
 
@@ -32,7 +24,10 @@ const updateInterviewSessionSchema = z.object({
   body: z.object({
     title: z.string().optional(),
     description: z.string().optional(),
-    schedule: z.date().optional(),
+    scheduledAt: z.string().optional().refine((date) => date ? !isNaN(Date.parse(date)) : true, {
+      message: "Scheduled date must be a valid ISO date",
+    }),
+    status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]).optional(),
   }),
 });
 
@@ -60,7 +55,7 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
     });
   }
 
-  const { title, description, candidateId, interviewerIds, scheduledAt, usePredefined, rounds } = parseResult.data;
+  const { title, description, candidateId, interviewerIds, scheduledAt, usePredefined } = parseResult.data;
 
   try {
     const candidate = await prisma.user.findUnique({
@@ -92,28 +87,20 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
         candidateId,
         scheduledAt: new Date(scheduledAt),
         usePredefined: usePredefined ?? false,
-        interviewers: {  
+        interviewers: {
           create: interviewerIds.map((interviewerId) => ({
             interviewerId,
           })),
         },
-        rounds: {
-          create: rounds.map((round) => ({
-            name: round.name,
-            scheduledAt: new Date(round.scheduledAt),
-            details: round.details,
-            status: "SCHEDULED",
-          })),
-        },
+        roomId: null, // Initialize roomId as null; to be updated during WebRTC setup.
       },
       include: {
         candidate: true,
-        interviewers: {  
+        interviewers: {
           include: {
             interviewer: true,
           },
         },
-        rounds: true,
       },
     });
 
@@ -135,23 +122,34 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
 
 
 export const updateInterviewSession = async (req: Request, res: Response): Promise<any> => {
-  const { id } = req.params;
-  const { title, description, schedule } = req.body; 
+  const parseResult = updateInterviewSessionSchema.safeParse(req);
+
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid input",
+      errors: parseResult.error.format(),
+    });
+  }
+
+  const { id } = parseResult.data.params;
+  const { title, description, scheduledAt, status } = parseResult.data.body;
 
   try {
-    const updatedSession = await prisma.interview.update({
+    const updatedInterview = await prisma.interview.update({
       where: { id },
       data: {
         ...(title && { title }),
         ...(description && { description }),
-        ...(schedule && { schedule }),
+        ...(scheduledAt && { scheduledAt: new Date(scheduledAt) }),
+        ...(status && { status }),
       },
     });
 
     return res.status(200).json({
       success: true,
-      message: "Interview session updated successfully.",
-      updatedSession,
+      message: "Interview session updated successfully",
+      interview: updatedInterview,
     });
   } catch (error: any) {
     console.error("Error updating interview session:", error);
@@ -196,230 +194,16 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
 };
 
 
-//************************************** Rounds *******************************  */
-
-const RoundStatus = z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]);
-
-const UpdateRoundDetailsSchema = z.object({
-  params: z.object({
-    interviewId: z.string().uuid("Invalid interview session ID"),
-    roundId: z.string().uuid("Invalid round ID"),
-  }),
-  body: z.object({
-    name: z.string().min(1, "Name cannot be empty").optional(),
-    scheduledAt: z.string().datetime("Invalid date format").optional(),
-    status: RoundStatus.optional(),
-  }),
-});
-
-const deleteRoundSchema = z.object({
-  params: z.object({
-    interviewId: z.string().uuid("Invalid interview session ID."),
-    roundId: z.string().uuid("Invalid round ID."),
-  }),
-});
-
-export const updateRoundDetails = async (req: Request, res: Response): Promise<any> => {
-  const validatedRequest = UpdateRoundDetailsSchema.parse({
-    params: req.params,
-    body: req.body,
-  });
-
-  const { interviewId, roundId } = validatedRequest.params;
-  const { name, scheduledAt, status } = validatedRequest.body;
-
-  try {
-    const round = await prisma.round.findFirst({
-      where: { id: roundId, interviewId },
-    });
-
-    if (!round) {
-      return res.status(404).json({
-        success: false,
-        message: "Round not found or does not belong to the specified interview.",
-      });
-    }
-
-    const updatedRound = await prisma.round.update({
-      where: { id: roundId },
-      data: {
-        ...(name && { name }),
-        ...(scheduledAt && { scheduledAt }),
-        ...(status && { status }),
+export const findInterviewByRoomId = async (roomId: string) => {
+  return await prisma.interview.findUnique({
+    where: { roomId },
+    include: {
+      candidate: true,
+      interviewers: {
+        include: { interviewer: true },
       },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Round details updated successfully.",
-      updatedRound,
-    });
-  } catch (error: any) {
-    console.error("Error updating round details:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update round details.",
-      error: error.message,
-    });
-  }
-};
-
-export const deleteRound = async (req: Request, res: Response): Promise<any> => {
-  const validatedRequest = deleteRoundSchema.parse({
-    params: req.params,
+    },
   });
-
-  const { interviewId, roundId } = validatedRequest.params;
-
-  try {
-    const round = await prisma.round.findFirst({
-      where: { id: roundId, interviewId },
-    });
-
-    if (!round) {
-      return res.status(404).json({
-        success: false,
-        message: "Round not found.",
-      });
-    }
-
-    await prisma.round.delete({
-      where: { id: roundId },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Round deleted successfully.",
-    });
-  } catch (error: any) {
-    console.error("Error deleting round:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete round.",
-      error: error.message,
-    });
-  }
-};
-
-
-const addRoundsSchema = z.object({
-  params: z.object({
-    interviewId: z.string().uuid("Invalid interview session ID."),
-  }),
-  body: z.object({
-    rounds: z
-      .array(
-        z.object({
-          name: z.string(),
-          schedule: z.date(),
-          status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]).default("PENDING"),
-        })
-      )
-      .min(1, "At least one round must be provided."),
-  }),
-});
-
-const getRoundsSchema = z.object({
-  params: z.object({
-    interviewId: z.string().uuid("Invalid interview session ID."),
-  }),
-});
-
-
-export const addRoundsToInterview = async (req: Request, res: Response): Promise<any> => {
-  const validatedRequest = addRoundsSchema.safeParse({params: req.params, body: req.body});
-
-  if (!validatedRequest.success) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: validatedRequest.error.format(),
-    });
-  }
-
-  const { interviewId } = validatedRequest.data.params;
-  const { rounds } = validatedRequest.data.body;
-
-  try {
-    const interview = await prisma.interview.findUnique({
-      where: { id: interviewId },
-    });
-
-    if (!interview) {
-      return res.status(404).json({
-        success: false,
-        message: "Interview session not found.",
-      });
-    }
-
-    const createdRounds = await prisma.round.createMany({
-      data: rounds.map((round: any) => ({
-        ...round,
-        interviewId,
-      })),
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Rounds added successfully.",
-      createdRoundsCount: createdRounds.count,
-    });
-  } catch (error: any) {
-    console.error("Error adding rounds to interview:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error.",
-      error: error.message || "An unexpected error occurred.",
-    });
-  }
-};
-
-
-export const getRoundsForInterview = async (req: Request, res: Response): Promise<any> => {
-  const validatedRequest = getRoundsSchema.safeParse({params: req.params});
-
-  if (!validatedRequest.success) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: validatedRequest.error.format(),
-    });
-  }
-
-  const { interviewId } = validatedRequest.data.params;
-
-  try {
-    const interview = await prisma.interview.findUnique({
-      where: { id: interviewId },
-    });
-
-    if (!interview) {
-      return res.status(404).json({
-        success: false,
-        message: "Interview session not found.",
-      });
-    }
-
-    const rounds = await prisma.round.findMany({
-      where: { interviewId },
-      orderBy: { scheduledAt: "asc" },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Rounds fetched successfully.",
-      rounds,
-    });
-  } catch (error: any) {
-    console.error("Error fetching rounds for interview:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error.",
-      error: error.message || "An unexpected error occurred.",
-    });
-  }
 };
 
 

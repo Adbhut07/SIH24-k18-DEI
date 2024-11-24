@@ -41,7 +41,6 @@ model User {
   interviewsAsCandidate    Interview[] @relation("CandidateInterviews")
   interviewsAsInterviewer  InterviewInterviewer[] @relation("InterviewerAssignments")
   answers                  Answer[]    @relation("CandidateAnswers")
-  roundsAsInterviewer      Round[]     @relation("InterviewerRounds") // Add this relation
 }
 
 model Interview {
@@ -51,13 +50,16 @@ model Interview {
   candidateId    String          @db.Uuid
   candidate      User            @relation("CandidateInterviews", fields: [candidateId], references: [id])
   interviewers   InterviewInterviewer[] @relation("InterviewerAssignments")
-  rounds         Round[]         // New relation to store rounds
   scheduledAt    DateTime
+  roomId         String?          @unique
   type           InterviewType   @default(HUMAN_LED)
   usePredefined  Boolean         @default(false)
   status         InterviewStatus @default(SCHEDULED)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  // Relations for questions and answers
+  askedQuestions AskedQuestion[]
 }
 
 model InterviewInterviewer {
@@ -68,25 +70,10 @@ model InterviewInterviewer {
   interviewer  User      @relation("InterviewerAssignments", fields: [interviewerId], references: [id])
 }
 
-model Round {
-  id            String       @id @default(uuid()) @db.Uuid
-  name          String       // E.g., "Ice Breaking Round", "Technical Round"
-  interviewId   String       @db.Uuid
-  interview     Interview    @relation(fields: [interviewId], references: [id])
-  scheduledAt   DateTime     // Time this round is scheduled
-  status        InterviewStatus @default(SCHEDULED) // Individual round status
-  interviewerId String?      @db.Uuid
-  interviewer   User?        @relation("InterviewerRounds", fields: [interviewerId], references: [id]) // Add the relation name
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  askedQuestions AskedQuestion[]
-}
-
 model AskedQuestion {
   id          String    @id @default(uuid()) @db.Uuid
-  roundId     String    @db.Uuid
-  round       Round     @relation(fields: [roundId], references: [id])
+  interviewId String    @db.Uuid
+  interview   Interview @relation(fields: [interviewId], references: [id])
   questionId  String?   @db.Uuid
   question    Question? @relation(fields: [questionId], references: [id])
   isAiDriven  Boolean   @default(false)
@@ -107,7 +94,6 @@ model Question {
 
   askedQuestions AskedQuestion[]  
 }
-
 
 model Answer {
   id              String        @id @default(uuid()) @db.Uuid

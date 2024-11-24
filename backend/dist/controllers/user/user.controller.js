@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = void 0;
+exports.getUserById = exports.getUserByEmail = exports.getAllUsers = exports.deleteUser = exports.updateUser = exports.createUser = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const zod_1 = __importDefault(require("zod"));
@@ -131,3 +131,103 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
+const getAllUsersQuerySchema = zod_1.default.object({
+    role: zod_1.default.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), // Role is optional
+});
+const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = getAllUsersQuerySchema.parse(req.query);
+        const whereCondition = query.role ? { role: query.role } : undefined;
+        const users = yield prisma.user.findMany({
+            where: whereCondition,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+        res.status(200).json({
+            success: true,
+            data: users,
+        });
+    }
+    catch (error) {
+        console.error("Error in getAllUsers:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+exports.getAllUsers = getAllUsers;
+const getUserByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required",
+            });
+        }
+        const user = yield prisma.user.findUnique({
+            where: { email },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: user,
+        });
+    }
+    catch (error) {
+        console.error("Error in getUserByEmail:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+exports.getUserByEmail = getUserByEmail;
+const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Id is required",
+            });
+        }
+        const user = yield prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: user,
+        });
+    }
+    catch (error) {
+        console.error("Error in getUserById:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+exports.getUserById = getUserById;
