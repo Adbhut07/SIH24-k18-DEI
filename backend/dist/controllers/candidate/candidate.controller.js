@@ -40,9 +40,6 @@ const getCandidateInterviews = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         const interviews = yield prisma.interview.findMany({
             where: Object.assign({ candidateId: userId }, (status && { status })),
-            include: {
-                rounds: true,
-            },
         });
         return res.status(200).json({
             success: true,

@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.signin = exports.signup = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = __importDefault(require("zod"));
 const generateTokenAndSetCookie_1 = __importDefault(require("../../utils/generateTokenAndSetCookie"));
 const prisma = new client_1.PrismaClient();
@@ -73,19 +72,12 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 createdAt: true,
             },
         });
-        const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
-        if (JWT_SECRET === "default-secret-key" && process.env.NODE_ENV === "production") {
-            throw new Error("JWT_SECRET environment variable is not set!");
-        }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "24h" });
-        return res.status(201).json({
-            success: true,
-            data: {
-                user,
-                token,
-            },
-            message: "User created successfully",
-        });
+        // const token = jwt.sign(
+        //   { userId: user.id, role: user.role },
+        //   JWT_SECRET,
+        //   { expiresIn: "24h" }
+        // );
+        // return generateTokenAndSetCookie(user, res);
     }
     catch (error) {
         console.error("Error in signup controller", error.message);

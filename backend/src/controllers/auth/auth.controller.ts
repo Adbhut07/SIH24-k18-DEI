@@ -70,26 +70,14 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
       },
     });
 
-    const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
+    // const token = jwt.sign(
+    //   { userId: user.id, role: user.role },
+    //   JWT_SECRET,
+    //   { expiresIn: "24h" }
+    // );
 
-    if (JWT_SECRET === "default-secret-key" && process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET environment variable is not set!");
-    }
+    return generateTokenAndSetCookie(user, res);
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-
-    return res.status(201).json({
-      success: true,
-      data: {
-        user,
-        token,
-      },
-      message: "User created successfully",
-    });
   } catch (error) {
     console.error("Error in signup controller", (error as Error).message);
     return res

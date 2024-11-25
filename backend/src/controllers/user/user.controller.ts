@@ -56,14 +56,14 @@ export const createUser = async (req: Request, res: Response): Promise<any> => {
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: user,
       message: "User created successfully",
     });
   } catch (error) {
     console.error("Error in createUser:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -95,14 +95,14 @@ export const updateUser = async (req: Request, res: Response):Promise<any> => {
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: updatedUser,
       message: "User updated successfully",
     });
   } catch (error) {
     console.error("Error in updateUser:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -121,18 +121,18 @@ export const deleteUser = async (req: Request, res: Response):Promise<any> => {
 
     await prisma.user.delete({ where: { id } });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "User deleted successfully",
     });
   } catch (error) {
     console.error("Error in deleteUser:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
 const getAllUsersQuerySchema = zod.object({
-  role: zod.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), // Role is optional
+  role: zod.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), 
 });
 
 export const getAllUsers = async (req: Request, res: Response): Promise<any> => {
@@ -152,13 +152,13 @@ export const getAllUsers = async (req: Request, res: Response): Promise<any> => 
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: users,
     });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -190,13 +190,13 @@ export const getUserByEmail = async (req: Request, res: Response):Promise<any> =
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: user,
     });
   } catch (error) {
     console.error("Error in getUserByEmail:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -229,12 +229,12 @@ export const getUserById = async (req: Request, res: Response):Promise<any> => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: user,
     });
   } catch (error) {
     console.error("Error in getUserById:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

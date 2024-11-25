@@ -39,9 +39,6 @@ export const getCandidateInterviews = async (req: Request, res: Response): Promi
         candidateId: userId,
         ...(status && { status }), 
       },
-      include: {
-        rounds: true, 
-      },
     });
 
     return res.status(200).json({
