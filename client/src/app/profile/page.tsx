@@ -1,6 +1,7 @@
-import { Sidebar } from "@/components/candidate/sidebar"
-import { Navbar } from "@/components/candidate/navbar"
-import { DashboardContent } from "@/components/candidate/dashboard-content"
+'use client'
+import { Sidebar } from "@/components/profile/sidebar"
+import { Navbar } from "@/components/profile/navbar"
+import { MainContent } from "@/components/profile/mainContent"
 
 export default function Dashboard() {
 
@@ -11,10 +12,9 @@ export default function Dashboard() {
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar />
         <main className="flex-1 overflow-y-auto bg-background">
-          <DashboardContent />
+          <MainContent/>
         </main>
       </div>
     </div>
   )
 }
-

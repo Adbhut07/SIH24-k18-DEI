@@ -1,30 +1,41 @@
+'use client'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Clock, FileText, PenTool, Lightbulb, Video } from 'lucide-react'
 import { Input } from "@/components/ui/input"
+import { useSelector } from "react-redux"
 
 export function DashboardContent() {
+
+  const user = useSelector((state)=>state.user)
+
+  console.log(user);
+
+
+
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 ">
       <header>
-        <h1 className="text-3xl font-bold">Welcome back, John!</h1>
-        <p className="text-muted-foreground">Here's an overview of your progress</p>
+        <h1 className="text-3xl font-bold ">Welcome back, {user.name} </h1>
+        <p className="text-blue-700">Here's an overview of your progress</p>
       </header>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
             <CardTitle className="text-sm font-medium">Next Interview</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2d 14h 37m</div>
             <p className="text-xs text-muted-foreground">Frontend Developer at TechCorp</p>
-            <Button className="mt-2" size="sm">Set Reminder</Button>
+            <Button className="mt-2 bg-gray-800 text-white " size="sm">Set Reminder</Button>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Interview Preparation</CardTitle>
@@ -33,7 +44,7 @@ export function DashboardContent() {
           <CardContent>
             <div className="text-2xl font-bold">75%</div>
             <Progress value={75} className="mt-2" />
-            <Button className="mt-2" size="sm" variant="outline">View Resources</Button>
+            <Button className="mt-2  text-white bg-gray-800" size="sm" variant="outline">View Resources</Button>
           </CardContent>
         </Card>
         <Card>
@@ -42,11 +53,11 @@ export function DashboardContent() {
             <PenTool className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button className="w-full" size="sm">Schedule Mock Interview</Button>
-            <Button className="w-full" size="sm" variant="outline">Update Profile</Button>
+            <Button className="w-full bg-gray-800" size="sm">Schedule Mock Interview</Button>
+            <Button className="w-full bg-gray-800 text-white" size="sm" variant="outline">Update Profile</Button>
             <div className="flex space-x-2">
               <Input placeholder="Enter interview code" className="flex-grow" />
-              <Button size="sm">
+              <Button className="bg-gray-800" size="sm">
                 <Video className="h-4 w-4 mr-2" />
                 Join
               </Button>
@@ -71,8 +82,8 @@ export function DashboardContent() {
                   <h3 className="font-semibold">{interview.position}</h3>
                   <p className="text-sm text-muted-foreground">{interview.company}</p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Badge variant={interview.score >= 8 ? "default" : "secondary"}>
+                <div className="flex items-center space-x-4 ">
+                  <Badge className="bg-gray-800 text-white" variant={interview.score >= 8 ? "default" : "secondary"}>
                     Score: {interview.score}
                   </Badge>
                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -96,7 +107,7 @@ export function DashboardContent() {
               <li>Dress professionally and arrive early</li>
               <li>Ask thoughtful questions about the role and company</li>
             </ul>
-            <Button className="mt-4 w-full" size="sm">View More Tips</Button>
+            <Button className="mt-4 w-full bg-gray-800 text-white" size="sm">View More Tips</Button>
           </CardContent>
         </Card>
       </section>
