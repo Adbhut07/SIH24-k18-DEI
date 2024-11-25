@@ -4,6 +4,7 @@ import "./globals.css";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/theme";
 import StoreProvider from "./StoreProvider";
+import {Toaster} from 'react-hot-toast'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,7 +36,9 @@ export default function RootLayout({
         className={`${manrope.className} bg-white dark:bg-[#171717]`}
       >
         <ThemeProvider attribute="class" enableSystem={false} disableTransitionOnChange>
-          <StoreProvider>{children}</StoreProvider>
+          <StoreProvider>{children}
+            <Toaster/>
+          </StoreProvider>
         </ThemeProvider>
       </body>
     </html>

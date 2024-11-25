@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button"
 
 export function Sidebar() {
   return (
-    <aside className="w-64 bg-background border-r border-border h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-64 bg-background border-r border-border h-screen sticky top-0 overflow-y-auto bg-gray-800 text-white">
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Candidate Dashboard</h1>
-        <nav className="space-y-2">
+        <h1 className="text-2xl font-bold mb-4 ">Candidate Dashboard</h1>
+        <nav className="space-y-2 border-t">
           <Button variant="ghost" className="w-full justify-start">
             <Home className="mr-2 h-4 w-4" />
             Home
@@ -33,10 +33,10 @@ export function Sidebar() {
           </Button>
         </nav>
       </div>
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border text-white">
         <h2 className="font-semibold mb-2">Interview Insights</h2>
-        <p className="text-sm text-muted-foreground">Total Interviews: 12</p>
-        <p className="text-sm text-muted-foreground">Avg. Performance: 8.5/10</p>
+        <p className="text-sm ">Total Interviews: 12</p>
+        <p className="text-sm">Avg. Performance: 8.5/10</p>
       </div>
     </aside>
   )

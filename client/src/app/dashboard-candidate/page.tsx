@@ -3,8 +3,10 @@ import { Navbar } from "@/components/candidate/navbar"
 import { DashboardContent } from "@/components/candidate/dashboard-content"
 
 export default function Dashboard() {
+
+  
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen ">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar />

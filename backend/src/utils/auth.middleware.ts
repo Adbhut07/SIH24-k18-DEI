@@ -17,7 +17,8 @@ declare global {
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization
+    
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next(new Error('No token provided'));

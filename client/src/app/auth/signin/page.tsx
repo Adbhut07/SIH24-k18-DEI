@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import WebGL from '@/components/WebGL'
+import { Sidebar } from '@/components/auth/sidebar';
+
 
 import { Button } from '@/components/ui/button'
 import {
@@ -94,8 +96,11 @@ export default function SignIn() {
         setTimeout(() => {
           if (user.role === 'CANDIDATE') {
             router.push('/dashboard-candidate');
-          } else {
-            router.push('/dashboard-interviewer');
+          } else if (user.role==='ADMIN') {
+            router.push('/check');
+          }
+          else{
+            router.push('/dashboard-candidate');
           }
         }, 100);
       } else {
@@ -110,8 +115,9 @@ export default function SignIn() {
 }
 
   return (
-    <div className="container flex justify-center items-center min-h-screen py-12">
-      <Card className="w-full max-w-md">
+    <div className="h-full flex items-center ">
+      <Sidebar />
+      <Card className="w-full p-4 mx h-[60vh] mx-auto  max-w-md">
         <CardHeader>
           <CardTitle className="font-bold text-lg">Sign In</CardTitle>
           <CardDescription className="text-medium">
