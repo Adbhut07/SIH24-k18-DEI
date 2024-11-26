@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import WebGL from '@/components/WebGL'
 import { Sidebar } from '@/components/auth/sidebar';
 
 
@@ -56,6 +55,7 @@ export default function SignIn() {
     try {
       const response = await fetch('http://localhost:5454/api/v1/auth/signin', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 const getCandidateInterviewsSchema = z.object({
   params: z.object({
-    userId: z.string().uuid("Invalid user ID."),
+    email: z.string().email(),
   }),
   query: z.object({
     status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]).optional(),
@@ -19,12 +19,12 @@ export const getCandidateInterviews = async (req: Request, res: Response): Promi
     query: req.query
   });
 
-  const { userId } = validatedRequest.params;
+  const { email } = validatedRequest.params;
   const { status } = validatedRequest.query;
 
   try {
     const candidate = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: email },
     });
 
     if (!candidate || candidate.role !== "CANDIDATE") {
@@ -33,7 +33,7 @@ export const getCandidateInterviews = async (req: Request, res: Response): Promi
         message: "Candidate not found or user is not a candidate.",
       });
     }
-
+    const userId = candidate.id;
     const interviews = await prisma.interview.findMany({
       where: {
         candidateId: userId,

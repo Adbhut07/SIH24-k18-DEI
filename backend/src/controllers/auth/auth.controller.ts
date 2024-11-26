@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import zod from "zod";
 import generateTokenAndSetCookie from "../../utils/generateTokenAndSetCookie";
 
@@ -118,7 +117,7 @@ export const signin = async (req: Request, res: Response): Promise<any> => {
       });
     }
 
-    generateTokenAndSetCookie(user, res);
+    return generateTokenAndSetCookie(user, res);
   } catch (error) {
     console.error("Error in signin controller:", (error as Error).message);
     res.status(500).json({

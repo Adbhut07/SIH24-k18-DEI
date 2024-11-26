@@ -60,7 +60,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 createdAt: true,
             },
         });
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             data: user,
             message: "User created successfully",
@@ -68,7 +68,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.error("Error in createUser:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.createUser = createUser;
@@ -97,7 +97,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 updatedAt: true,
             },
         });
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: updatedUser,
             message: "User updated successfully",
@@ -105,7 +105,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.error("Error in updateUser:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.updateUser = updateUser;
@@ -120,19 +120,19 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             });
         }
         yield prisma.user.delete({ where: { id } });
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "User deleted successfully",
         });
     }
     catch (error) {
         console.error("Error in deleteUser:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.deleteUser = deleteUser;
 const getAllUsersQuerySchema = zod_1.default.object({
-    role: zod_1.default.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), // Role is optional
+    role: zod_1.default.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(),
 });
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -148,14 +148,14 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 createdAt: true,
             },
         });
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: users,
         });
     }
     catch (error) {
         console.error("Error in getAllUsers:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.getAllUsers = getAllUsers;
@@ -184,14 +184,14 @@ const getUserByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 message: "User not found",
             });
         }
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: user,
         });
     }
     catch (error) {
         console.error("Error in getUserByEmail:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.getUserByEmail = getUserByEmail;
@@ -220,14 +220,14 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: "User not found",
             });
         }
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: user,
         });
     }
     catch (error) {
         console.error("Error in getUserById:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 exports.getUserById = getUserById;

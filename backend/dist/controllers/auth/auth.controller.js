@@ -77,7 +77,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //   JWT_SECRET,
         //   { expiresIn: "24h" }
         // );
-        // return generateTokenAndSetCookie(user, res);
+        return (0, generateTokenAndSetCookie_1.default)(user, res);
     }
     catch (error) {
         console.error("Error in signup controller", error.message);
@@ -114,7 +114,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Invalid credentials",
             });
         }
-        (0, generateTokenAndSetCookie_1.default)(user, res);
+        return (0, generateTokenAndSetCookie_1.default)(user, res);
     }
     catch (error) {
         console.error("Error in signin controller:", error.message);

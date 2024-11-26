@@ -1,137 +1,120 @@
-'use client';  
+'use client';
+import React, { useState, useEffect } from "react";
+import { useAgora } from "../../hooks/useAgora";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Device, types as mediasoupClientTypes } from 'mediasoup-client';
-import { Socket, io } from 'socket.io-client';
-import { RtpCapabilities } from 'mediasoup-client/lib/RtpParameters';
-
-const VideoChat = () => {
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [device, setDevice] = useState<Device | null>(null);
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-    const localVideoRef = useRef<HTMLVideoElement>(null);
-    const remoteVideoRef = useRef<HTMLVideoElement>(null);
+const VideoCall = () => {
+  const { client, joinChannel, leaveChannel, toggleAudio, toggleVideo } = useAgora();
+    const [channelName, setChannelName] = useState("");
+    const [token, setToken] = useState<string | null>(null);
+    const [uid, setUid] = useState<number>(Math.floor(Math.random() * 1000));
+    const [remoteUsers, setRemoteUsers] = useState<any[]>([]); // To store remote users
 
     useEffect(() => {
-        // Connect to the server
-        const newSocket = io('http://localhost:5454', {
-            withCredentials: true
-        });
-        
-        setSocket(newSocket);
-
-        // Initialize MediaSoup device
-        const initDevice = async () => {
-            try {
-                const device = new Device();
-                
-                // Get router RTP capabilities
-                const routerRtpCapabilities = await new Promise<RtpCapabilities>((resolve) => {
-                    newSocket.emit('get-rtp-capabilities', {}, resolve);
-                });
-
-                // Load the device with the router's RTP capabilities
-                await device.load({ routerRtpCapabilities });
-                setDevice(device);
-
-                // Get local media stream
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
-                setLocalStream(stream);
-
-                if (localVideoRef.current) {
-                    localVideoRef.current.srcObject = stream;
-                }
-            } catch (error) {
-                console.error('Error initializing device:', error);
-            }
-        };
-
-        initDevice();
-
+        // Cleanup when component unmounts
         return () => {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-            newSocket.close();
+            leaveChannel();
         };
     }, []);
 
-    const startPublishing = async () => {
-        if (!socket || !device || !localStream) return;
-
+    // Fetch token from the backend
+    const fetchToken = async (channelName: string, role: 'publisher' | 'subscriber') => {
         try {
-            // Create send transport
-            const transportInfo = await new Promise((resolve) => {
-                socket.emit('create-transport', {}, resolve);
-            });
-
-            const sendTransport = device.createSendTransport(transportInfo as mediasoupClientTypes.TransportOptions);
-
-            // Handle transport connection
-            sendTransport.on('connect', async ({ dtlsParameters }, callback) => {
-                socket.emit('connect-transport', {
-                    transportId: sendTransport.id,
-                    dtlsParameters
-                }, callback);
-            });
-
-            // Handle producer creation
-            sendTransport.on('produce', async ({ kind, rtpParameters }, callback) => {
-                socket.emit('produce', {
-                    transportId: sendTransport.id,
-                    kind,
-                    rtpParameters
-                }, ({ id }: { id: string }) => {
-                    callback({ id });
-                });
-            });
-
-            // Start publishing tracks
-            for (const track of localStream.getTracks()) {
-                await sendTransport.produce({ track });
-            }
+            const response = await fetch(
+                `http://localhost:5454/api/v1/auth/generate-token?channelName=${channelName}&uid=${uid}&role=${role}`
+            );
+            const data = await response.json();
+            setToken(data.token);
         } catch (error) {
-            console.error('Error starting publisher:', error);
+            console.error("Error fetching token:", error);
         }
     };
 
+    // Handle the user joining the channel
+    const handleJoin = async () => {
+        if (channelName && token) {
+            await joinChannel(channelName, token, uid);
+        } else {
+            console.error("Channel name or token is missing");
+        }
+    };
+
+    // Handle the user leaving the channel
+    const handleLeave = async () => {
+        await leaveChannel();
+        setRemoteUsers([]); // Clear remote users when leaving the channel
+    };
+
+    // Handle remote users joining
+    const handleUserPublished = (user: any, mediaType: string) => {
+        if (mediaType === 'video') {
+            client.subscribe(user, mediaType).then(() => {
+                user.videoTrack?.play(`remote-player-${user.uid}`);
+                setRemoteUsers(prev => [...prev, user]);
+            });
+        }
+    };
+
+    // Handle remote users leaving
+    const handleUserUnpublished = (user: any) => {
+        setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+    };
+
+    // Set up event listeners for remote users
+    useEffect(() => {
+        client.on("user-published", handleUserPublished);
+        client.on("user-unpublished", handleUserUnpublished);
+
+        return () => {
+            client.off("user-published", handleUserPublished);
+            client.off("user-unpublished", handleUserUnpublished);
+        };
+    }, [client]);
+
     return (
-        <div className="p-4">
-            <div className="mb-4">
-                <h2 className="text-xl font-bold mb-2">Video Chat</h2>
-                <button
-                    onClick={startPublishing}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                    Start Publishing
-                </button>
+        <div className="video-call-container">
+            <h1 className="header">Agora Video Call</h1>
+            
+            <div className="channel-name-container">
+                <input
+                    type="text"
+                    className="input"
+                    placeholder="Enter Channel Name"
+                    value={channelName}
+                    onChange={(e) => setChannelName(e.target.value)}
+                />
+                <button className="button" onClick={() => fetchToken(channelName, 'publisher')}>Get Token</button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <h3 className="font-bold mb-2">Local Video</h3>
-                    <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full border border-gray-300 rounded"
-                    />
+
+            <div className="controls">
+              <button className="button" onClick={handleJoin}>Join Channel</button>
+              <div></div>
+              <button className="button" onClick={handleLeave}>Leave Channel</button>
+              <div></div>
+              <button className="button" onClick={toggleAudio}>Toggle Audio</button>
+              <div></div>
+              <button className="button" onClick={toggleVideo}>Toggle Video</button>
+            </div>
+
+            <div className="video-container">
+                {/* Local Video */}
+                <div id="local-player" className="local-video">
+                    {/* Local user's video will be placed here */}
+                    
                 </div>
-                <div>
-                    <h3 className="font-bold mb-2">Remote Video</h3>
-                    <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className="w-full border border-gray-300 rounded"
-                    />
-                </div>
+
+                {/* Remote Video */}
+                <div id="remote-videos" className="remote-videos">
+    {remoteUsers.map((user) => (
+        <div key={user.uid} id={`remote-player-${user.uid}`} className="remote-video">
+            <p>User {user.uid}</p>
+            {/* Remote user's video will be placed here */}
+        </div>
+    ))}
+</div>
+
             </div>
         </div>
     );
 };
 
-export default VideoChat;
+export default VideoCall;

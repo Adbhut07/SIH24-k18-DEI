@@ -17,14 +17,16 @@ declare global {
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization
+    // const authHeader = req.headers.authorization
     
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next(new Error('No token provided'));
-    }
+    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    //   return next(new Error('No token provided'));
+    // }
 
-    const token = authHeader.split(' ')[1];
+    // const token = authHeader.split(' ')[1];
+
+    const token = req.cookies.jwt;
     
     const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 

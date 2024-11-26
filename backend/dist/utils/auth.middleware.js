@@ -18,11 +18,12 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return next(new Error('No token provided'));
-        }
-        const token = authHeader.split(' ')[1];
+        // const authHeader = req.headers.authorization
+        // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        //   return next(new Error('No token provided'));
+        // }
+        // const token = authHeader.split(' ')[1];
+        const token = req.cookies.jwt;
         const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
         if (JWT_SECRET === "default-secret-key" && process.env.NODE_ENV === "production") {
             throw new Error("JWT_SECRET environment variable is not set!");

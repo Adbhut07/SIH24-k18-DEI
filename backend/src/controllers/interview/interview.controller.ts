@@ -92,7 +92,7 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
             interviewerId,
           })),
         },
-        roomId: null, // Initialize roomId as null; to be updated during WebRTC setup.
+        roomId: uuidv4(),
       },
       include: {
         candidate: true,
