@@ -3,7 +3,7 @@
 import { Navbar } from "@/components/admin/Navbar"
 import { Sidebar } from "@/components/admin/Sidebar"
 import { DashboardOverview } from "@/components/admin/DashboardOverview"
-import { InterviewScheduler } from "@/components/admin/InterviewCalendar"
+import { InterviewScheduler } from "@/components/admin/InterviewScheduler"
 import { InterviewList } from "@/components/admin/InterviewList"
 import { UserManagement } from "@/components/admin/UserManagement"
 

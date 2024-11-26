@@ -14,7 +14,7 @@ import {
 
 export function InterviewScheduler() {
   const [candidateEmail, setCandidateEmail] = useState("");
-  const [interviewer, setInterviewer] = useState(null);
+  const [interviewer, setInterviewer] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,24 +33,14 @@ export function InterviewScheduler() {
     const scheduledAt = new Date(date);
     scheduledAt.setHours(Number(time), 0, 0, 0);
 
-    const createData = {
-      title: "Interview Session",
-        description: "Scheduled Interview",
-        candidateEmail: candidateEmail, // Assuming email as ID
-        interviewerEmail: interviewer.email,
-        scheduledAt: scheduledAt.toISOString()
-    }
-
-    console.log(createData)
     try {
-      const response = await axios.post(`http://localhost:3000/api/v1/interview/create`, {
-        createData
-      },
-      {
-        withCredentials:true
-      }
-    );
-    console.log(response)
+      const response = await axios.post("/api/interviews", {
+        title: "Interview Session",
+        description: "Scheduled Interview",
+        candidateId: candidateEmail, // Assuming email as ID
+        interviewerIds: [interviewer],
+        scheduledAt: scheduledAt.toISOString(),
+      });
 
       setMessage("Interview scheduled successfully!");
     } catch (error: any) {
@@ -82,30 +72,26 @@ export function InterviewScheduler() {
     try {
       const data = await getAllUsers();
 
-      const available_interviewers = data.filter((user)=>user.role ==='INTERVIEWER')
+      // const available_interviewers = data.filter((user)=>user.role ==='INTERVIEWER')
 
-
-      setInterviewers(available_interviewers)
-
+      console.log(data)
+  
+    
   
     } catch (err) {
       console.log('Error fetching data')
     }
   }
 
-  useEffect(()=>{
-    fetchUsers()
-  },[])
-
-
+console.log('Hey')
 
 
 
 
 
   return (
-    <div className="space-y-4 border-2 p-5 rounded-xl">
-      <h2 className="text-2xl font-bold text-gray-800">Schedule Interview</h2>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-purple-400">Schedule Interview</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="candidate">Candidate Email</Label>
@@ -126,27 +112,20 @@ export function InterviewScheduler() {
               <SelectValue placeholder="Select interviewer" />
             </SelectTrigger>
             <SelectContent>
-              {
-                interviewers.map((item)=>(
-                  <SelectItem key={item.id} value={item}>{item.name}</SelectItem>
-                ))
-              }
+              <SelectItem value="john">John Doe</SelectItem>
+              <SelectItem value="jane">Jane Smith</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       <div>
         <Label>Date</Label>
-        <div className=" flex items-center justify-center">
-
-        
         <Calendar
           mode="single"
           selected={date}
           onSelect={setDate}
           className="rounded-md border"
         />
-        </div>
       </div>
       <div>
         <Label htmlFor="time">Time</Label>
