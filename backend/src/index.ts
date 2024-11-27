@@ -3,13 +3,13 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import "dotenv/config";
 import cors from 'cors';
-// import { v4 as uuidv4 } from 'uuid';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import errorHandler from './utils/errorHandler';
 import interviewRoutes from './routes/interview.route';
 import candidateRoutes from './routes/candidate.route';
+import userProfileRoutes from './routes/userProfile.route';
 
 
 const app = express();
@@ -34,6 +34,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/interview', interviewRoutes);
 app.use('/api/v1/candidate', candidateRoutes);
+app.use('/api/v1/userProfile', userProfileRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, world!');

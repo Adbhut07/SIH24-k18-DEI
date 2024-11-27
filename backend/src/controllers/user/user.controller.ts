@@ -238,3 +238,4 @@ export const getUserById = async (req: Request, res: Response):Promise<any> => {
     return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+

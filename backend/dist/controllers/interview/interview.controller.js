@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkInterviewUpdatePermissions = exports.findInterviewByRoomId = exports.updateInterviewStatus = exports.updateInterviewSession = exports.createInterviewSession = void 0;
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
+const uuid_1 = require("uuid");
 const prisma = new client_1.PrismaClient();
 const createInterviewSessionSchema = zod_1.z.object({
     title: zod_1.z.string().nonempty("Title is required"),
@@ -87,7 +88,7 @@ const createInterviewSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                         interviewerId,
                     })),
                 },
-                roomId: null, // Initialize roomId as null; to be updated during WebRTC setup.
+                roomId: (0, uuid_1.v4)(),
             },
             include: {
                 candidate: true,

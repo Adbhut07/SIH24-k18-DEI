@@ -13,4 +13,5 @@ router.delete('/:id', auth_middleware_1.protect, (0, auth_middleware_1.authorize
 router.get('/getAllUsers', auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), user_controller_1.getAllUsers);
 router.get('/getUserByEmail', auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), user_controller_1.getUserByEmail);
 router.get('/getUserById', user_controller_1.getUserById);
+router.get('/aws', user_controller_1.getAwsImg);
 exports.default = router;

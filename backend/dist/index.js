@@ -8,12 +8,12 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 require("dotenv/config");
 const cors_1 = __importDefault(require("cors"));
-// import { v4 as uuidv4 } from 'uuid';
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const user_route_1 = __importDefault(require("./routes/user.route"));
 const errorHandler_1 = __importDefault(require("./utils/errorHandler"));
 const interview_route_1 = __importDefault(require("./routes/interview.route"));
 const candidate_route_1 = __importDefault(require("./routes/candidate.route"));
+const userProfile_route_1 = __importDefault(require("./routes/userProfile.route"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 const corsOptions = {
@@ -30,6 +30,7 @@ app.use('/api/v1/auth', auth_route_1.default);
 app.use('/api/v1/user', user_route_1.default);
 app.use('/api/v1/interview', interview_route_1.default);
 app.use('/api/v1/candidate', candidate_route_1.default);
+app.use('/api/v1/userProfile', userProfile_route_1.default);
 app.get('/', (req, res) => {
     res.send('Hello, world!');
 });

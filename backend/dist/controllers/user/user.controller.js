@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserById = exports.getUserByEmail = exports.getAllUsers = exports.deleteUser = exports.updateUser = exports.createUser = void 0;
+exports.getAwsImg = exports.getUserById = exports.getUserByEmail = exports.getAllUsers = exports.deleteUser = exports.updateUser = exports.createUser = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const zod_1 = __importDefault(require("zod"));
+const s3_1 = require("../../helper/s3");
 const prisma = new client_1.PrismaClient();
 const createUserSchema = zod_1.default.object({
     name: zod_1.default.string().min(2, "Name must be at least 2 characters"),
@@ -231,3 +232,17 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getUserById = getUserById;
+const getAwsImg = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const url = yield (0, s3_1.getObjectURL)('SIH_logo_2024.png');
+        return res.status(200).json({
+            success: true,
+            data: url,
+        });
+    }
+    catch (error) {
+        console.error("Error in getAwsImg:", error);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+exports.getAwsImg = getAwsImg;

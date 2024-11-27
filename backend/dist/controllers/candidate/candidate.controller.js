@@ -15,7 +15,7 @@ const zod_1 = require("zod");
 const prisma = new client_1.PrismaClient();
 const getCandidateInterviewsSchema = zod_1.z.object({
     params: zod_1.z.object({
-        userId: zod_1.z.string().uuid("Invalid user ID."),
+        email: zod_1.z.string().email(),
     }),
     query: zod_1.z.object({
         status: zod_1.z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]).optional(),
@@ -26,11 +26,11 @@ const getCandidateInterviews = (req, res) => __awaiter(void 0, void 0, void 0, f
         params: req.params,
         query: req.query
     });
-    const { userId } = validatedRequest.params;
+    const { email } = validatedRequest.params;
     const { status } = validatedRequest.query;
     try {
         const candidate = yield prisma.user.findUnique({
-            where: { id: userId },
+            where: { email: email },
         });
         if (!candidate || candidate.role !== "CANDIDATE") {
             return res.status(404).json({
@@ -38,6 +38,7 @@ const getCandidateInterviews = (req, res) => __awaiter(void 0, void 0, void 0, f
                 message: "Candidate not found or user is not a candidate.",
             });
         }
+        const userId = candidate.id;
         const interviews = yield prisma.interview.findMany({
             where: Object.assign({ candidateId: userId }, (status && { status })),
         });
