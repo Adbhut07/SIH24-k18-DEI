@@ -24,7 +24,7 @@ const NeonBackground = () => {
     // Object arrays
     const stars: Star[] = [];
     const planes: Aircraft[] = [];
-    const missiles: Missile[] = [];
+    const clouds: Cloud[] = [];
 
     // Helper functions
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -102,52 +102,96 @@ const NeonBackground = () => {
       }
     }
 
-    // Missile class
-    class Missile {
+    // Cloud class
+    class Cloud {
       x: number;
       y: number;
+      width: number;
+      height: number;
       speed: number;
-      angle: number;
-      length: number;
 
       constructor() {
-        this.x = randomInRange(0, canvas.width);
-        this.y = canvas.height + 50;
-        this.speed = randomInRange(3, 5);
-        this.angle = -Math.PI / 2 + randomInRange(-0.1, 0.1);
-        this.length = 20;
+        this.width = randomInRange(100, 200);
+        this.height = this.width * 0.6;
+        this.x = Math.random() * (canvas.width + this.width) - this.width;
+        this.y = randomInRange(0, canvas.height * 0.6);
+        this.speed = randomInRange(0.2, 0.5);
       }
 
       update() {
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed;
+        this.x += this.speed;
+        if (this.x > canvas.width + this.width) {
+          this.x = -this.width;
+          this.y = randomInRange(0, canvas.height * 0.6);
+        }
       }
 
       draw() {
-        ctx.strokeStyle = "rgba(255, 200, 0, 0.8)";
-        ctx.lineWidth = 2;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+        
+        ctx.fillStyle = gradient;
+        
+        // Draw cloud shape
         ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(
-          this.x - Math.cos(this.angle) * this.length,
-          this.y - Math.sin(this.angle) * this.length
+        ctx.moveTo(this.width * 0.2, this.height * 0.5);
+        ctx.bezierCurveTo(
+          this.width * 0.2, this.height * 0.2,
+          this.width * 0.4, this.height * 0.2,
+          this.width * 0.5, this.height * 0.4
         );
-        ctx.stroke();
+        ctx.bezierCurveTo(
+          this.width * 0.6, this.height * 0.2,
+          this.width * 0.8, this.height * 0.2,
+          this.width * 0.8, this.height * 0.5
+        );
+        ctx.bezierCurveTo(
+          this.width, this.height * 0.5,
+          this.width, this.height * 0.7,
+          this.width * 0.8, this.height * 0.8
+        );
+        ctx.bezierCurveTo(
+          this.width * 0.6, this.height,
+          this.width * 0.4, this.height,
+          this.width * 0.2, this.height * 0.8
+        );
+        ctx.bezierCurveTo(
+          0, this.height * 0.7,
+          0, this.height * 0.5,
+          this.width * 0.2, this.height * 0.5
+        );
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
       }
     }
 
-    // Create stars and planes
-    const createStars = (count: number) => {
-      for (let i = 0; i < count; i++) stars.push(new Star());
-    };
+    // // Create stars, planes, and clouds
+    // const createStars = (count: number) => {
+    //   for (let i = 0; i < count; i++) stars.push(new Star());
+    // };
 
     const createPlanes = (count: number) => {
       for (let i = 0; i < count; i++) planes.push(new Aircraft());
     };
 
+    const createClouds = (count: number) => {
+      for (let i = 0; i < count; i++) clouds.push(new Cloud());
+    };
+
     // Animation loop
     const animate = () => {
-      ctx.fillStyle = "rgba(0, 0,0,0.2)";
+      // Create gradient background
+      const gradient = ctx.createLinearGradient(0, 255, 0, canvas.height);
+      gradient.addColorStop(0, '#ADD8E6'); // Light blue at the top
+      gradient.addColorStop(1, '#87CEEB'); // Sky blue at the bottom
+      
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       stars.forEach((star) => {
@@ -155,32 +199,29 @@ const NeonBackground = () => {
         star.draw();
       });
 
+      clouds.forEach((cloud) => {
+        cloud.update();
+        cloud.draw();
+      });
+
       planes.forEach((plane) => {
         plane.update();
         plane.draw();
       });
 
-      if (Math.random() < 0.02 && missiles.length < 5) {
-        missiles.push(new Missile());
-      }
-
-      missiles.forEach((missile, index) => {
-        missile.update();
-        missile.draw();
-        if (missile.y < -50) missiles.splice(index, 1);
-      });
-
       requestAnimationFrame(animate);
     };
 
-    createStars(200);
-    createPlanes(8);
+    // createStars(200);
+    createPlanes(25);
+    createClouds(10);
     animate();
 
     return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full bg-gray-200" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full" />;
 };
 
 export default NeonBackground;
+

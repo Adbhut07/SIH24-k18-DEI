@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import Link from 'next/link'
 import toast, { Toaster } from 'react-hot-toast';
+import {Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -27,9 +29,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import Cookies from "js-cookie";
+
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+import Cookies from "js-cookie";
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,25 +42,23 @@ export function UserManagement() {
   const [error, setError] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
 
+<<<<<<< HEAD
   const cookie = Cookies.get("jwt");
   if(!cookie) {
     console.log('No JWT token found');
   }
   console.log(cookie);
+=======
+
+
+>>>>>>> origin/client-side
 
   // Function to fetch all users
   const getAllUsers = async () => {
     try {
-      if (!cookie) {
-        throw new Error('No JWT token found');
-      }
-
-      const response = await axios.get('http://localhost:5454/api/v1/user/getAllUsers', {
-        headers: {
-          Authorization: `Bearer ${cookie}`,
-        },
+      const response = await axios.get('http://localhost:5454/api/v1/user/getAllUsers',{
+        withCredentials:true
       });
-
       // console.log(response.data)
       return response.data.data
     } catch (error) {
@@ -66,26 +67,28 @@ export function UserManagement() {
     }
   };
 
+
+  async function fetchUsers() {
+    try {
+      setIsLoading(true);
+      const data = await getAllUsers();
+      setUsers(data);
+      setFilteredUsers(data); // Initialize filteredUsers with all users
+      setIsLoading(false);
+      
+
+      // console.log(data)
+      toast.success('Users fetched')
+    } catch (err) {
+      setError("Failed to fetch users.");
+      setIsLoading(false);
+      toast.error('User not fetched')
+    }
+  }
+
   // Fetch users on component mount
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        setIsLoading(true);
-        const data = await getAllUsers();
-        setUsers(data);
-        setFilteredUsers(data); // Initialize filteredUsers with all users
-        setIsLoading(false);
-        
-
-        console.log(data)
-        toast.success('Users fetched')
-      } catch (err) {
-        setError("Failed to fetch users.");
-        setIsLoading(false);
-        toast.error('User not fetched')
-      }
-    }
-
+  
     fetchUsers();
   }, []);
 
@@ -118,34 +121,50 @@ export function UserManagement() {
         role:newUser.role
       }
 
-      console.log(cookie)
 
       const response = await axios.post(
         'http://localhost:5454/api/v1/user/createUser',
         newUserAdded, // `newUser` should be the request body
         {
-          headers: {
-            Authorization: `Bearer ${cookie}`, // Headers should be part of the config object
-          }
+          withCredentials:true
         }
       );
 
-      if (!response.success) {
-        throw new Error("Failed to add user.");
-      }
+      console.log(response)
 
-      const addedUser = await response.json();
-      setUsers((prev) => [...prev, addedUser.data]); // Update users state
+      
+
+      const addedUser = response.data.data
+      setUsers((prev) => [...prev, addedUser]); // Update users state
 
       setNewUser({ name: "", email: "",password:"", role: "" }); // Clear form
-      toast.success(response.message)
+      toast.success(response.data.message)
       setIsLoading(false);
     } catch (err) {
       setError(err.message || "Failed to add user.");
-      toast.error('')
+      toast.error('Failed to add user')
       setIsLoading(false);
     }
   };
+
+
+  const handleDeleteUser = async (userId:string) => {
+    try {
+
+      // Call the API to delete the user
+      await axios.delete(`http://localhost:5454/api/v1/user/${userId}`,{
+        withCredentials:true
+      });
+
+      // Refetch the users after successful deletion
+      fetchUsers()
+      toast.success('User deleted successfully');
+    } catch (error) {
+      console.log('Error deleting user:', error);
+      toast.error('Failed to delete user');
+    } 
+  };
+
 
   return (
     <Card>
@@ -253,7 +272,10 @@ export function UserManagement() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
-                    <Button variant="link">Edit</Button>
+                    {
+                      (user.role !=='ADMIN') && <Trash2 className="ml-3 cursor-pointer " onClick={()=>{handleDeleteUser(user.id)}} />
+                    }
+                    
                   </TableCell>
                 </TableRow>
               ))}

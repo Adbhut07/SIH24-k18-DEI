@@ -55,7 +55,11 @@ export default function SignIn() {
     try {
       const response = await fetch('http://localhost:5454/api/v1/auth/signin', {
         method: 'POST',
+<<<<<<< HEAD
         credentials: 'include',
+=======
+        credentials:'include',
+>>>>>>> origin/client-side
         headers: {
           'Content-Type': 'application/json',
         },
@@ -97,7 +101,7 @@ export default function SignIn() {
           if (user.role === 'CANDIDATE') {
             router.push('/dashboard-candidate');
           } else if (user.role==='ADMIN') {
-            router.push('/check');
+            router.push('/dashboard-admin');
           }
           else{
             router.push('/dashboard-candidate');
@@ -115,9 +119,9 @@ export default function SignIn() {
 }
 
   return (
-    <div className="h-full flex items-center ">
+    <div className="h-[100vh] flex items-center justify-center ">
       <Sidebar />
-      <Card className="w-full p-4 mx h-[60vh] mx-auto  max-w-md">
+      <Card className="w-full p-4 mx h-[60vh] mx-auto max-w-md">
         <CardHeader>
           <CardTitle className="font-bold text-lg">Sign In</CardTitle>
           <CardDescription className="text-medium">

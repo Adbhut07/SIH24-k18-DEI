@@ -36,12 +36,12 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+          <span className="bg-clip-text  bg-gradient-to-r text-black ">
             Automating the Interview Process
           </span>
         </motion.h1>
         <motion.p
-          className="text-xl md:text-2xl mb-8"
+          className="text-xl md:text-2xl mb-8 text-black"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
