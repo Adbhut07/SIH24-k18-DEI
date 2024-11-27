@@ -5,7 +5,7 @@
 //   region: "ap-south-1",
 //   credentials: {
 //     accessKeyId: "",
-//     secretAccessKey: "",
+//     secretAccessKey: "/",
 //   },
 // });
 
