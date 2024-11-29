@@ -12,15 +12,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 import Webcam from 'react-webcam'
 import OpenAI from 'openai'
 import { useEffect } from "react"
-import AgoraRTC, { AgoraRTCProvider, useIsConnected, useJoin, useLocalCameraTrack, useLocalMicrophoneTrack, usePublish, useRemoteUsers } from "agora-rtc-react";
-import {v4 as uuidv4} from 'uuid'
-import ConnectAgoraChannel from "./components/ConnectAgoraChannel"
-import Client from '@/components/Client'
+import Conference from "./Conference"
+import UserControls from "./UserControls"
 
 
-AgoraRTC.createClient({ mode: "live", codec: "h264" });
+//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
 
-const  InterviewBoardroom = ()=> {
+// // Suggested questions data
+// var suggestedQuestions = [
+//   { id: 1, question: "Explain the principles of radar technology.", relevance: "High", topic: "Radar", toughness: 4 },
+//   { id: 2, question: "What are the key challenges in developing stealth aircraft?", relevance: "Medium", topic: "Aerospace", toughness: 3 },
+//   { id: 3, question: "Describe the process of guided missile trajectory optimization.", relevance: "High", topic: "Missiles", toughness: 5 },
+// ]
+
+export default function FullBoardRoom({leaveChannel}) {
 
 
   const [currentQuestion, setCurrentQuestion] = useState(null)
@@ -104,12 +109,20 @@ const  InterviewBoardroom = ()=> {
       return []; // Return an empty array on failure
     }
   }
+  
 
 
 useEffect(()=>{
   // getSuggestedQuestions();
 
 },[])
+
+
+
+
+
+
+
 
 
 
@@ -125,15 +138,7 @@ useEffect(()=>{
     setCurrentQuestion("")
   }
 
-  
-
-
-
   return (
-     <div>
-
-     
-     
     <div className="h-screen bg-background p-4">
       <div className="grid grid-cols-5 gap-4 h-full">
         {/* Left Section - Suggested Questions */}
@@ -164,86 +169,12 @@ useEffect(()=>{
           </CardContent>
         </Card>
 
-        {/* Middle Section - Camera Views */}
-        <Card className="col-span-3 ">
-          <CardContent className="p-4 ">
-            {/* <div className="grid grid-rows-2 gap-4 h-[90vh] bg-blue-500">
-              <div className="bg-muted aspect-video rounded-lg flex items-center justify-center  ">
-                <p className="text-muted-foreground">Interviewer Camera</p>
-              </div>
 
-              <div className="grid grid-cols-3 gap-2 w-full mt-1 ">
-              <div className="bg-muted aspect-video rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Candidate </p>
-              </div>
-              <div className="bg-muted aspect-video rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Interviewer 2</p>
-              </div>
-              <div className="bg-muted aspect-video rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Interviewer 3</p>
-              </div>
+        <Conference  leaveChannel={leaveChannel}/>
 
-            </div>
+       
 
-            </div> */}
-
-            <div className=" h-[75vh] flex flex-col" >
-               <div className="w-full h-[70%] bg-muted aspect-video rounded-lg flex items-center justify-center overflow-hidden">
-                {/* <p className="text-muted-foreground">Interviewer</p> */}
-                {/* <Webcam height={720} width={1280} /> */}
-                
-                </div>
-
-               <div className="flex h-[25vh] gap-1  justify-between border-2 items-center p-2">
-
-                <div className="bg-muted h-full  aspect-video rounded-lg flex items-center justify-center overflow-hidden">
-                {/* <Webcam height={720} width={1280} /> */}
-                </div>
-
-                <div className="bg-muted h-full  aspect-video rounded-lg flex items-center justify-center overflow-hidden">
-                {/* <Webcam height={720} width={1280} /> */}
-                </div>
-                <div className="bg-muted h-full  aspect-video rounded-lg flex items-center justify-center overflow-hidden">
-                {/* <Webcam height={720} width={1280} /> */}
-                </div>
-                
-
-               </div>
-
-
-            </div>
-
-
-            
-           
-
-            
-
-            <div className="">
-
-              <div className="flex justify-center space-x-4 mt-4">
-                <Button className="bg-blue-100" variant="outline" size="icon"><Mic className="h-4 w-4" /></Button>
-                {/* <Button variant="outline" size="icon"><MicOff className="h-4 w-4" /></Button> */}
-                <Button className="bg-blue-200" variant="outline" size="icon"><Video className="h-4 w-4" /></Button>
-                {/* <Button variant="outline" size="icon"><VideoOff className="h-4 w-4" /></Button> */}
-                <Button className="bg-blue-100" variant="outline" size="icon"><MessageSquare className="h-4 w-4" /></Button>
-                <Button className="bg-blue-200" variant="outline" size="icon"><HelpCircle className="h-4 w-4" /></Button>
-              </div>
-              {currentQuestion && (
-                <div className="mt-4 flex justify-center gap-2">
-                  <Button onClick={() => handleMarkQuestion(3)}><ThumbsUp className="mr-2 h-4 w-4" /> Excellent (3 mark)</Button>
-                  <Button onClick={() => handleMarkQuestion(2)}><ThumbsUp className="mr-2 h-4 w-4" /> Good (2 mark)</Button>
-                  <Button onClick={() => handleMarkQuestion(1)}><ThumbsUp className="mr-2 h-4 w-4" /> Average (1 marks)</Button>
-                  <Button onClick={() => handleMarkQuestion(0)}><ThumbsUp className="mr-2 h-4 w-4" /> Poor (0 mark)</Button>
-                </div>
-              )}
-
-
-            </div>
-
-
-          </CardContent>
-        </Card>
+       
 
         {/* Right Section - Analytics */}
         <Card className="col-span-1 overflow-auto">
@@ -321,29 +252,13 @@ useEffect(()=>{
               </div>
             </div>
           </CardContent>
+
+
+
+
+
         </Card>
       </div>
-    
-
-</div>
-
-</div>
-
-
-
-
-
-
-
-
-
-   
+    </div>
   )
 }
-
-export default InterviewBoardroom
-
-
-
-
-
