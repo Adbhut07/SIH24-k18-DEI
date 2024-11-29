@@ -5,6 +5,8 @@ import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/theme";
 import StoreProvider from "./StoreProvider";
 import {Toaster} from 'react-hot-toast'
+import AgoraRTC, { AgoraRTCProvider, useRTCClient } from "agora-rtc-react";
+import Client from "@/components/Client";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,6 +27,8 @@ export const metadata: Metadata = {
   description: "AI Drien Interview Platform",
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,11 +39,22 @@ export default function RootLayout({
       <body
         className={`${manrope.className} bg-white dark:bg-[#171717]`}
       >
+
+     
+       
         <ThemeProvider attribute="class" enableSystem={false} disableTransitionOnChange>
-          <StoreProvider>{children}
+          <StoreProvider>
+    
+            {children}
+            
+          
             <Toaster/>
+    
           </StoreProvider>
         </ThemeProvider>
+       
+        
+ 
       </body>
     </html>
   );
