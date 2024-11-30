@@ -55,11 +55,7 @@ export default function SignIn() {
     try {
       const response = await fetch('http://localhost:5454/api/v1/auth/signin', {
         method: 'POST',
-<<<<<<< HEAD
         credentials: 'include',
-=======
-        credentials:'include',
->>>>>>> origin/client-side
         headers: {
           'Content-Type': 'application/json',
         },
