@@ -42,11 +42,6 @@ export function UserManagement() {
   const [error, setError] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
 
-  const cookie = Cookies.get("jwt");
-  if(!cookie) {
-    console.log('No JWT token found');
-  }
-  console.log(cookie);
 
   // Function to fetch all users
   const getAllUsers = async () => {

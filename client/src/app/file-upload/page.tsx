@@ -50,7 +50,6 @@ export default function UploadFile() {
         throw new Error("Upload failed");
       }
 
-      // Get public URL of the file to store in database
       const signedUrlResponse = await fetch("/api/getPresignedUrl", {
         method: "POST",
         headers: {

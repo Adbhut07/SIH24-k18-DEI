@@ -82,7 +82,7 @@ export function InterviewScheduler() {
     try {
       const data = await getAllUsers();
 
-      const available_interviewers = data.filter((user: { role: string }) => user.role === 'INTERVIEWER')
+      const available_interviewers = data.filter((user)=>user.role ==='INTERVIEWER')
 
 
       setInterviewers(available_interviewers)
