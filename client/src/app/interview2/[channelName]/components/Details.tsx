@@ -26,9 +26,9 @@ export default function Details(){
     // Join a channel
     const { error, isLoading } = useJoin(
       {
-        appid: 'f1c290c9f1494b18a9515fb615b4b007',
+        appid: '8a17f1b47b6043a88cf582896718b905',
         channel:'interview',
-        token:'007eJxTYNi7yJ21ut0+0O/Jwfw3cjcmKoe9MXxhVTyhhIWZc6+KSJ4CQ5phspGlQbJlmqGJpUmSoUWipamhaVqSmaFpkkmSgYF5WIVHekMgI4P1VClWRgYIBPE5GTLzSlKLyjJTyxkYAC+iHks=',
+        token:'007eJxTYHj57/DGywwVz2ftXmVywV6pge9w2n77uLVWC+zi/vZ9letXYLBINDRPM0wyMU8yMzAxTrSwSE4ztTCysDQzN7RIsjQwtXnumd4QyMggECnKysgAgSA+J0NmXklqUVlmajkDAwBepiGN',
         uid:uuidv4()
       },
       isJoining
