@@ -8,12 +8,15 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 require("dotenv/config");
 const cors_1 = __importDefault(require("cors"));
+const http_1 = __importDefault(require("http"));
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const user_route_1 = __importDefault(require("./routes/user.route"));
 const errorHandler_1 = __importDefault(require("./utils/errorHandler"));
 const interview_route_1 = __importDefault(require("./routes/interview.route"));
 const candidate_route_1 = __importDefault(require("./routes/candidate.route"));
 const userProfile_route_1 = __importDefault(require("./routes/userProfile.route"));
+const agoraRoom_route_1 = __importDefault(require("./routes/agoraRoom.route"));
+const socket_1 = __importDefault(require("./socket/socket"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 const corsOptions = {
@@ -31,12 +34,18 @@ app.use('/api/v1/user', user_route_1.default);
 app.use('/api/v1/interview', interview_route_1.default);
 app.use('/api/v1/candidate', candidate_route_1.default);
 app.use('/api/v1/userProfile', userProfile_route_1.default);
+app.use('/api/v1/agoraRoom', agoraRoom_route_1.default);
 app.get('/', (req, res) => {
     res.send('Hello, world!');
 });
-app.listen(port, () => {
+const server = http_1.default.createServer(app);
+const io = (0, socket_1.default)(server);
+server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+// app.listen(port, () => {
+//     console.log(`Server is running on http://localhost:${port}`);
+// });
 // io.on('connection', (socket) => {
 //     console.log(`User connected: ${socket.id}`);
 //     socket.on("create-room", ({ userId }, callback) => {

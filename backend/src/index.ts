@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import "dotenv/config";
 import cors from 'cors';
+import http from 'http';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
@@ -10,6 +11,10 @@ import errorHandler from './utils/errorHandler';
 import interviewRoutes from './routes/interview.route';
 import candidateRoutes from './routes/candidate.route';
 import userProfileRoutes from './routes/userProfile.route';
+import agoraRoomRoutes from './routes/agoraRoom.route'
+
+import initializeSocket from './socket/socket';
+
 
 
 const app = express();
@@ -35,15 +40,22 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/interview', interviewRoutes);
 app.use('/api/v1/candidate', candidateRoutes);
 app.use('/api/v1/userProfile', userProfileRoutes);
+app.use('/api/v1/agoraRoom', agoraRoomRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, world!');
 });
 
-app.listen(port, () => {
+const server = http.createServer(app);
+const io = initializeSocket(server);
+
+server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 
+// app.listen(port, () => {
+//     console.log(`Server is running on http://localhost:${port}`);
+// });
 
 
 

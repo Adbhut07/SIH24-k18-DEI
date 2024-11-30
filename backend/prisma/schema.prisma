@@ -29,112 +29,119 @@ enum InterviewType {
 }
 
 model User {
-  id         String    @id @default(uuid()) @db.Uuid
-  name       String
-  email      String    @unique
-  password   String
-  role       Role
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  interviewsAsCandidate    Interview[] @relation("CandidateInterviews")
-  interviewsAsInterviewer  InterviewInterviewer[] @relation("InterviewerAssignments")
-  answers                  Answer[]    @relation("CandidateAnswers")
-  candidateProfile         CandidateProfile?
+  interviewsAsCandidate   Interview[]            @relation("CandidateInterviews")
+  interviewsAsInterviewer InterviewInterviewer[] @relation("InterviewerAssignments")
+  // answers                 Answer[]               @relation("CandidateAnswers")
+  candidateProfile        CandidateProfile?
 }
 
 model CandidateProfile {
-  id            String   @id @default(uuid()) @db.Uuid
-  candidateId   String   @unique @db.Uuid
-  candidate     User     @relation(fields: [candidateId], references: [id])
-  
-  name          String
-  designation   String?
-  age           Int?
-  location      String?
-  aadharNumber  String?  @unique
-  email         String   @unique
-  phoneNumber   String?  @unique
-  summary       String?
-  
-  resume        String?  // S3 URL for uploaded resume
-  medicalReport String?  // S3 URL for uploaded medical report
-  tenthMarks    String?  // S3 URL or JSON for marks
-  twelfthMarks  String?  // S3 URL or JSON for marks
+  id          String @id @default(uuid()) @db.Uuid
+  candidateId String @unique @db.Uuid
+  candidate   User   @relation(fields: [candidateId], references: [id])
+
+  name         String
+  designation  String?
+  age          Int?
+  location     String?
+  aadharNumber String? @unique
+  email        String  @unique
+  phoneNumber  String? @unique
+  summary      String?
+
+  resume        String? // S3 URL for uploaded resume
+  medicalReport String? // S3 URL for uploaded medical report
+  tenthMarks    String? // S3 URL or JSON for marks
+  twelfthMarks  String? // S3 URL or JSON for marks
   gateScore     String?
   jeeScore      String?
-  
-  experience    Json?  // Detailed description or JSON
-  education     Json?  // Detailed description or JSON
-  skills        String[] // Array of skills
-  achievements  String[] // Array of achievements
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+
+  experience   Json? // Detailed description or JSON
+  education    Json? // Detailed description or JSON
+  skills       String[] // Array of skills
+  achievements String[] // Array of achievements
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-
 model Interview {
-  id             String          @id @default(uuid()) @db.Uuid
-  title          String
-  description    String?
-  candidateId    String          @db.Uuid
-  candidate      User            @relation("CandidateInterviews", fields: [candidateId], references: [id])
-  interviewers   InterviewInterviewer[] @relation("InterviewerAssignments")
-  scheduledAt    DateTime
-  roomId         String?          @unique
-  type           InterviewType   @default(HUMAN_LED)
-  usePredefined  Boolean         @default(false)
-  status         InterviewStatus @default(SCHEDULED)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id            String                 @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  candidateId   String                 @db.Uuid
+  candidate     User                   @relation("CandidateInterviews", fields: [candidateId], references: [id])
+  interviewers  InterviewInterviewer[] @relation("InterviewerAssignments")
+  scheduledAt   DateTime
+  roomId        String?                @unique
+  type          InterviewType          @default(HUMAN_LED)
+  status        InterviewStatus        @default(SCHEDULED)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
 
   // Relations for questions and answers
-  askedQuestions AskedQuestion[]
+  // askedQuestions AskedQuestion[]
 }
 
 model InterviewInterviewer {
-  id           String    @id @default(uuid()) @db.Uuid
-  interviewId  String    @db.Uuid
-  interviewerId String   @db.Uuid
-  interview    Interview @relation("InterviewerAssignments", fields: [interviewId], references: [id])
-  interviewer  User      @relation("InterviewerAssignments", fields: [interviewerId], references: [id])
+  id            String    @id @default(uuid()) @db.Uuid
+  interviewId   String    @db.Uuid
+  interviewerId String    @db.Uuid
+  interview     Interview @relation("InterviewerAssignments", fields: [interviewId], references: [id])
+  interviewer   User      @relation("InterviewerAssignments", fields: [interviewerId], references: [id])
 }
 
-model AskedQuestion {
-  id          String    @id @default(uuid()) @db.Uuid
-  interviewId String    @db.Uuid
-  interview   Interview @relation(fields: [interviewId], references: [id])
-  questionId  String?   @db.Uuid
-  question    Question? @relation(fields: [questionId], references: [id])
-  isAiDriven  Boolean   @default(false)
-  text        String
-  createdAt   DateTime  @default(now())
-  answers     Answer[]
+// model AskedQuestion {
+//   id          String    @id @default(uuid()) @db.Uuid
+//   interviewId String    @db.Uuid
+//   interview   Interview @relation(fields: [interviewId], references: [id])
+//   // questionId  String?   @db.Uuid
+//   // question    Question? @relation(fields: [questionId], references: [id])
+//   isAiDriven  Boolean   @default(false)
+//   text        String
+//   createdAt   DateTime  @default(now())
+//   // answers     Answer[]
+// }
+
+// model Question {
+//   id        String       @id @default(uuid()) @db.Uuid
+//   text      String
+//   level     String
+//   topic     String
+//   type      QuestionType
+//   metadata  Json?
+//   createdAt DateTime     @default(now())
+//   updatedAt DateTime     @updatedAt
+
+//   askedQuestions AskedQuestion[]
+// }
+
+// model Answer {
+//   id              String        @id @default(uuid()) @db.Uuid
+//   askedQuestionId String        @db.Uuid
+//   askedQuestion   AskedQuestion @relation(fields: [askedQuestionId], references: [id])
+//   candidateId     String        @db.Uuid
+//   candidate       User          @relation("CandidateAnswers", fields: [candidateId], references: [id])
+//   text            String?
+//   audioUrl        String?
+//   evaluation      String?
+//   createdAt       DateTime      @default(now())
+// }
+
+model Room {
+  id             String    @id @default(cuid()) 
+  appId          String    @unique
+  channel        String    @unique 
+  appCertificate String    
+  inUse          Boolean   @default(false)
 }
 
-model Question {
-  id        String       @id @default(uuid()) @db.Uuid
-  text      String
-  level     String
-  topic     String
-  type      QuestionType
-  metadata  Json?     
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  askedQuestions AskedQuestion[]  
-}
-
-model Answer {
-  id              String        @id @default(uuid()) @db.Uuid
-  askedQuestionId String        @db.Uuid
-  askedQuestion   AskedQuestion @relation(fields: [askedQuestionId], references: [id])
-  candidateId     String        @db.Uuid
-  candidate       User          @relation("CandidateAnswers", fields: [candidateId], references: [id]) 
-  text            String?      
-  audioUrl        String?      
-  evaluation      String?  
-  createdAt       DateTime      @default(now())
-}
