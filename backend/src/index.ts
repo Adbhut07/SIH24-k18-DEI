@@ -28,11 +28,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(errorHandler);
 
 app.use('/api/v1/auth', authRoutes);

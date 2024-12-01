@@ -4,6 +4,6 @@ import { authorize, protect } from "../utils/auth.middleware";
 
 const router = express.Router();
 
-router.get("/:userId/interviews", protect, authorize(["CANDIDATE", "ADMIN"]), getCandidateInterviews);
+router.get("/:email/interviews", protect, authorize(["CANDIDATE", "ADMIN"]), getCandidateInterviews);
 
 export default router;

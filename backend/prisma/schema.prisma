@@ -82,7 +82,7 @@ model Interview {
   candidate     User                   @relation("CandidateInterviews", fields: [candidateId], references: [id])
   interviewers  InterviewInterviewer[] @relation("InterviewerAssignments")
   scheduledAt   DateTime
-  roomId        String?                @unique
+  roomId        String?                
   type          InterviewType          @default(HUMAN_LED)
   status        InterviewStatus        @default(SCHEDULED)
   createdAt     DateTime               @default(now())
