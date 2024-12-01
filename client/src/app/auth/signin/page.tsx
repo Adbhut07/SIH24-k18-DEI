@@ -28,10 +28,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { setUser } from '@/lib/store/features/user/userSlice'
 import { useAppDispatch } from '@/lib/store/hooks';
+import Cookies from 'js-cookie';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(7, 'Password must be at least 7 characters'),
 })
 
 export default function SignIn() {
