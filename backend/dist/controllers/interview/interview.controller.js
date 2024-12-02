@@ -9,10 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkInterviewUpdatePermissions = exports.findInterviewByRoomId = exports.updateInterviewStatus = exports.updateInterviewSession = exports.createInterviewSession = void 0;
+exports.checkInterviewUpdatePermissions = exports.getAllInterviews = exports.updateInterviewStatus = exports.updateInterviewSession = exports.createInterviewSession = void 0;
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
-const uuid_1 = require("uuid");
 const prisma = new client_1.PrismaClient();
 const createInterviewSessionSchema = zod_1.z.object({
     title: zod_1.z.string().nonempty("Title is required"),
@@ -22,7 +21,7 @@ const createInterviewSessionSchema = zod_1.z.object({
     scheduledAt: zod_1.z.string().refine((date) => !isNaN(Date.parse(date)), {
         message: "Scheduled date must be a valid ISO date",
     }),
-    usePredefined: zod_1.z.boolean().optional(),
+    channelName: zod_1.z.string()
 });
 const updateInterviewSessionSchema = zod_1.z.object({
     params: zod_1.z.object({
@@ -34,7 +33,6 @@ const updateInterviewSessionSchema = zod_1.z.object({
         scheduledAt: zod_1.z.string().optional().refine((date) => date ? !isNaN(Date.parse(date)) : true, {
             message: "Scheduled date must be a valid ISO date",
         }),
-        status: zod_1.z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]).optional(),
     }),
 });
 const updateInterviewStatusSchema = zod_1.z.object({
@@ -56,7 +54,7 @@ const createInterviewSession = (req, res) => __awaiter(void 0, void 0, void 0, f
             errors,
         });
     }
-    const { title, description, candidateId, interviewerIds, scheduledAt, usePredefined } = parseResult.data;
+    const { title, description, candidateId, interviewerIds, scheduledAt, channelName } = parseResult.data;
     try {
         const candidate = yield prisma.user.findUnique({
             where: { id: candidateId },
@@ -76,19 +74,30 @@ const createInterviewSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 message: "One or more interviewers not found or invalid role",
             });
         }
+        const room = yield prisma.room.findFirst({
+            where: {
+                channel: channelName,
+                inUse: false,
+            }
+        });
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Room not found"
+            });
+        }
         const interview = yield prisma.interview.create({
             data: {
                 title,
                 description,
                 candidateId,
                 scheduledAt: new Date(scheduledAt),
-                usePredefined: usePredefined !== null && usePredefined !== void 0 ? usePredefined : false,
                 interviewers: {
                     create: interviewerIds.map((interviewerId) => ({
                         interviewerId,
                     })),
                 },
-                roomId: (0, uuid_1.v4)(),
+                roomId: room.id,
             },
             include: {
                 candidate: true,
@@ -99,10 +108,18 @@ const createInterviewSession = (req, res) => __awaiter(void 0, void 0, void 0, f
                 },
             },
         });
+        yield prisma.room.update({
+            where: {
+                id: room.id
+            },
+            data: {
+                inUse: true,
+            }
+        });
         return res.status(201).json({
             success: true,
             message: "Interview session created successfully",
-            interview,
+            data: { interview, room },
         });
     }
     catch (error) {
@@ -125,11 +142,11 @@ const updateInterviewSession = (req, res) => __awaiter(void 0, void 0, void 0, f
         });
     }
     const { id } = parseResult.data.params;
-    const { title, description, scheduledAt, status } = parseResult.data.body;
+    const { title, description, scheduledAt } = parseResult.data.body;
     try {
         const updatedInterview = yield prisma.interview.update({
             where: { id },
-            data: Object.assign(Object.assign(Object.assign(Object.assign({}, (title && { title })), (description && { description })), (scheduledAt && { scheduledAt: new Date(scheduledAt) })), (status && { status })),
+            data: Object.assign(Object.assign(Object.assign({}, (title && { title })), (description && { description })), (scheduledAt && { scheduledAt: new Date(scheduledAt) })),
         });
         return res.status(200).json({
             success: true,
@@ -161,6 +178,16 @@ const updateInterviewStatus = (req, res) => __awaiter(void 0, void 0, void 0, fu
             where: { id },
             data: { status },
         });
+        if (req.body.status === "COMPLETED") {
+            yield prisma.room.update({
+                where: {
+                    id: updatedStatus.roomId || "",
+                },
+                data: {
+                    inUse: false,
+                }
+            });
+        }
         return res.status(200).json({
             success: true,
             message: "Interview session status updated successfully.",
@@ -177,18 +204,45 @@ const updateInterviewStatus = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.updateInterviewStatus = updateInterviewStatus;
-const findInterviewByRoomId = (roomId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield prisma.interview.findUnique({
-        where: { roomId },
-        include: {
-            candidate: true,
-            interviewers: {
-                include: { interviewer: true },
+const getAllInterviews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const interviews = yield prisma.interview.findMany({
+            include: {
+                candidate: true,
+                interviewers: {
+                    include: {
+                        interviewer: true,
+                    },
+                },
             },
-        },
-    });
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Fetched all interviews successfully.",
+            data: interviews,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching interviews:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch interviews.",
+            error: error.message || "An unexpected error occurred",
+        });
+    }
 });
-exports.findInterviewByRoomId = findInterviewByRoomId;
+exports.getAllInterviews = getAllInterviews;
+// export const findInterviewByRoomId = async (roomId: string) => {
+//   return await prisma.interview.findUnique({
+//     where: { roomId },
+//     include: {
+//       candidate: true,
+//       interviewers: {
+//         include: { interviewer: true },
+//       },
+//     },
+//   });
+// };
 // not need currently
 const canUpdateInterview = (userId, interviewId) => __awaiter(void 0, void 0, void 0, function* () {
     const interview = yield prisma.interview.findUnique({

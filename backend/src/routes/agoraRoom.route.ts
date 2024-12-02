@@ -5,10 +5,10 @@ import { generateToken } from '../controllers/agoraRoom/tokenController';
 const router = express.Router();
 
 router.post('/rooms', createRoom);        
-router.get('/getRoom/:appId', getRoom);    
+router.get('/getRoom/:roomId', getRoom);    
 router.get('/rooms', getRooms);
-router.put('/rooms/:appId', updateRoom); 
-router.delete('/rooms/:appId', deleteRoom); 
-router.get('/agoraToken', generateToken);
+router.put('/rooms/:roomId', updateRoom); 
+router.delete('/rooms/:roomId', deleteRoom); 
+router.post('/agoraToken', generateToken);
 
 export default router;

@@ -62,11 +62,11 @@ export const getRooms = async (req: Request, res: Response):Promise<any> => {
 
 
 export const getRoom = async (req: Request, res: Response):Promise<any> => {
-    const { appId } = req.params;
+    const { roomId } = req.params;
   
     try {
       const room = await prisma.room.findUnique({
-        where: { appId },
+        where: { id: roomId },
       });
   
       if (!room) {
@@ -86,13 +86,13 @@ export const getRoom = async (req: Request, res: Response):Promise<any> => {
   
 export const updateRoom = async (req: Request, res: Response):Promise<any> => {
     
-    const { appId } = req.params;
+    const { roomId } = req.params;
   
     try {
         const validatedData = updateRoomSchema.parse(req.body);
 
         const updatedRoom = await prisma.room.update({
-            where: { appId },
+            where: { id: roomId },
             data: validatedData,
         });
   
@@ -108,11 +108,11 @@ export const updateRoom = async (req: Request, res: Response):Promise<any> => {
 };
   
 export const deleteRoom = async (req: Request, res: Response):Promise<any> => {
-    const { appId } = req.params;
+    const { roomId } = req.params;
   
     try {
       await prisma.room.delete({
-        where: { appId },
+        where: { id: roomId },
       });
   
       res.status(200).json({

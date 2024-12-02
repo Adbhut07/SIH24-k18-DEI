@@ -87,8 +87,8 @@ model Interview {
   status        InterviewStatus        @default(SCHEDULED)
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
+  evaluations  Evaluation[]
 
-  // Relations for questions and answers
   // askedQuestions AskedQuestion[]
 }
 
@@ -99,6 +99,31 @@ model InterviewInterviewer {
   interview     Interview @relation("InterviewerAssignments", fields: [interviewId], references: [id])
   interviewer   User      @relation("InterviewerAssignments", fields: [interviewerId], references: [id])
 }
+
+
+model Room {
+  id             String    @id @default(cuid()) 
+  appId          String    @unique
+  channel        String    @unique 
+  appCertificate String    
+  inUse          Boolean   @default(false)
+}
+
+model Evaluation {
+  id                 String            @id @default(uuid()) @db.Uuid
+  interviewId        String            @db.Uuid
+  interview          Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  questionDetails    Json              // Array of JSON objects containing question, topic, and marks and etc.
+  feedbackInterviewer Json             // JSON containing feedback given by interviewers
+  feedbackCandidate  Json              // JSON containing feedback from the candidate
+  relevancyAI        Float?            // Relevancy score given by AI
+  relevancyCandidate Float?            // Relevancy score given by the candidate
+  idealAnswerAI      Json?             // AI-provided ideal answers for the questions
+  marksAI            Float?            // Marks given by AI for the candidate's answers
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
 
 // model AskedQuestion {
 //   id          String    @id @default(uuid()) @db.Uuid
@@ -136,12 +161,3 @@ model InterviewInterviewer {
 //   evaluation      String?
 //   createdAt       DateTime      @default(now())
 // }
-
-model Room {
-  id             String    @id @default(cuid()) 
-  appId          String    @unique
-  channel        String    @unique 
-  appCertificate String    
-  inUse          Boolean   @default(false)
-}
-

@@ -11,20 +11,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateToken = void 0;
 const agora_access_token_1 = require("agora-access-token");
-const APP_ID = '8a17f1b47b6043a88cf582896718b905';
-const APP_CERTIFICATE = 'f013f7cdbcb8458bbd915cc9cd01ae37';
 const generateToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const channelName = 'room721';
-    const uid = 2882341273;
-    const rtcRole = agora_access_token_1.RtcRole.PUBLISHER;
-    if (!channelName || !uid) {
-        return res.status(400).json({ error: 'Channel name and UID are required' });
+    try {
+        const { appId, appCertificate, channelName, uid } = req.body;
+        if (!appId || !appCertificate || !channelName || !uid) {
+            return res.status(400).json({
+                error: 'appId, appCertificate, channelName, and uid are required'
+            });
+        }
+        const parsedUid = Number(uid);
+        if (isNaN(parsedUid)) {
+            return res.status(400).json({
+                error: 'uid must be a valid number'
+            });
+        }
+        const rtcRole = agora_access_token_1.RtcRole.PUBLISHER;
+        const expirationTimeInSeconds = 3600 * 24;
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const privilegeExpireTime = currentTimestamp + expirationTimeInSeconds;
+        const token = agora_access_token_1.RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, parsedUid, rtcRole, privilegeExpireTime);
+        return res.json({
+            token,
+            expiresAt: new Date(currentTimestamp * 1000 + expirationTimeInSeconds * 1000)
+        });
     }
-    const expirationTimeInSeconds = 3600; // 1 hour
-    const currentTimestamp = Math.floor(Date.now() / 1000);
-    const privilegeExpireTime = currentTimestamp + expirationTimeInSeconds;
-    // const rtcRole = role === 'publisher' ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
-    const token = agora_access_token_1.RtcTokenBuilder.buildTokenWithUid(APP_ID, APP_CERTIFICATE, channelName, uid, rtcRole, privilegeExpireTime);
-    return res.json({ token });
+    catch (error) {
+        console.error('Token generation error:', error);
+        const errorMessage = (error instanceof Error) ? error.message : 'Unknown error';
+        return res.status(500).json({
+            success: false,
+            error: 'Failed to generate token',
+            details: errorMessage
+        });
+    }
 });
 exports.generateToken = generateToken;

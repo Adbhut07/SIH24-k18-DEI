@@ -1,6 +1,0 @@
-fastapi
-uvicorn
-moviepy
-fer
-opencv-python
-websockets

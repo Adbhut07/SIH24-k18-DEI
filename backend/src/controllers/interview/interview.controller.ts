@@ -258,8 +258,43 @@ export const getAllInterviews = async (req: Request, res: Response): Promise<any
 };
 
 
+export const getInterviewById = async (req: Request, res: Response): Promise<any> => {
+  const { id } = req.params;
 
+  try {
+    const interview = await prisma.interview.findUnique({
+      where: { id },
+      include: {
+        candidate: true,
+        interviewers: {
+          include: {
+            interviewer: true,
+          },
+        },
+      },
+    });
 
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Fetched interview successfully.",
+      data: interview,
+    });
+  } catch (error: any) {
+    console.error("Error fetching interview:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch interview.",
+      error: error.message || "An unexpected error occurred",
+    });
+  }
+};
 
 
 

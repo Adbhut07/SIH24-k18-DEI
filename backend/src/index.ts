@@ -11,7 +11,8 @@ import errorHandler from './utils/errorHandler';
 import interviewRoutes from './routes/interview.route';
 import candidateRoutes from './routes/candidate.route';
 import userProfileRoutes from './routes/userProfile.route';
-import agoraRoomRoutes from './routes/agoraRoom.route'
+import agoraRoomRoutes from './routes/agoraRoom.route';
+import evaluationRoutes from './routes/evaluation.route';
 
 import initializeSocket from './socket/socket';
 
@@ -39,6 +40,7 @@ app.use('/api/v1/interview', interviewRoutes);
 app.use('/api/v1/candidate', candidateRoutes);
 app.use('/api/v1/userProfile', userProfileRoutes);
 app.use('/api/v1/agoraRoom', agoraRoomRoutes);
+app.use('/api/v1/evaluation', evaluationRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, world!');

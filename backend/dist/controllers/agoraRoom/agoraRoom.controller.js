@@ -11,15 +11,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteRoom = exports.updateRoom = exports.getRoom = exports.getRooms = exports.createRoom = void 0;
 const client_1 = require("@prisma/client");
+const zod_1 = require("zod");
 const prisma = new client_1.PrismaClient();
+const createRoomSchema = zod_1.z.object({
+    appId: zod_1.z.string().min(1, "App ID is required"),
+    channel: zod_1.z.string().min(1, "Channel is required"),
+    appCertificate: zod_1.z.string().min(1, "App Certificate is required"),
+});
+const updateRoomSchema = zod_1.z.object({
+    channel: zod_1.z.string().min(1, "Channel must be a non-empty string").optional(),
+    appCertificate: zod_1.z.string().min(1, "App Certificate must be a non-empty string").optional(),
+    inUse: zod_1.z.boolean().optional(),
+});
 const createRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { appId, channel, token, appCertificate } = req.body;
+    const validatedData = createRoomSchema.parse(req.body);
+    const { appId, channel, appCertificate } = validatedData;
     try {
         const newRoom = yield prisma.room.create({
             data: {
                 appId,
                 channel,
-                token,
                 appCertificate,
             },
         });
@@ -37,7 +48,11 @@ const createRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.createRoom = createRoom;
 const getRooms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const rooms = yield prisma.room.findMany();
+        const rooms = yield prisma.room.findMany({
+            where: {
+                inUse: false,
+            },
+        });
         res.status(200).json({
             success: true,
             message: "Rooms fetched successfully",
@@ -73,15 +88,11 @@ const getRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getRoom = getRoom;
 const updateRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { appId } = req.params;
-    const { channel, token, appCertificate } = req.body;
     try {
+        const validatedData = updateRoomSchema.parse(req.body);
         const updatedRoom = yield prisma.room.update({
             where: { appId },
-            data: {
-                channel,
-                token,
-                appCertificate,
-            },
+            data: validatedData,
         });
         res.status(200).json({
             success: true,
