@@ -3,21 +3,34 @@ import { useEffect, useState } from "react";
 import {v4 as uuidv4} from 'uuid'
 import Conference from "./Conference";
 import JoinRoom from "./JoinRoom"
-import { useParams } from "next/navigation";
 import FullBoardRoom from "./FullBoardRoom";
+import { useParams } from "next/navigation";
+import { useAppSelector } from "@/lib/store/hooks";
 
 
 
 export default function Details(){
 
-    const {channelName} = useParams()
-    console.log(channelName)
+  const {roomId} = useParams();
+  const user = useAppSelector((state)=>state.user)
 
-    const [channel, setChannel] = useState<string>("");
+
+ 
+
+
+
+  
+
+
+
+
     const [token, setToken] = useState<string>("");
     const [isJoining, setIsJoining] = useState<boolean>(false);
     const isConnected = useIsConnected()
     const [isError, setIsError] = useState<boolean>(false);
+    const [channel,setChannel] = useState("")
+    const [appId,setAppId] = useState('')
+    const [uid,setUid] = useState<Number>(123)
   
     const leaveChannel = () => setIsJoining(false);
 
@@ -26,17 +39,19 @@ export default function Details(){
     // Join a channel
     const { error, isLoading } = useJoin(
       {
-        appid: 'f1c290c9f1494b18a9515fb615b4b007',
-        channel:'interview',
-        token:'007eJxTYNi7yJ21ut0+0O/Jwfw3cjcmKoe9MXxhVTyhhIWZc6+KSJ4CQ5phspGlQbJlmqGJpUmSoUWipamhaVqSmaFpkkmSgYF5WIVHekMgI4P1VClWRgYIBPE5GTLzSlKLyjJTyxkYAC+iHks=',
-        uid:uuidv4()
+        appid: appId,
+        channel:channel,
+        token:token,
+        uid:Number(uid)
       },
       isJoining
     );
   
-    const onJoin = (channelToJoin: string, tokenToJoin: string) => {
+    const onJoin = (channelToJoin: string, tokenToJoin: string, appIdToJoin:string, uidToJoin:Number) => {
       setChannel(channelToJoin);
       setToken(tokenToJoin);
+      setAppId(appIdToJoin)
+      setUid(uidToJoin)
       setIsJoining(true);
     };
   
@@ -57,7 +72,7 @@ export default function Details(){
         <div>
             {
                 isConnected?(
-                    <FullBoardRoom leaveChannel={leaveChannel} />
+                    <FullBoardRoom channel={channel} uid={uid} leaveChannel={leaveChannel} />
 
                 ):(
                   <JoinRoom

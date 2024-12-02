@@ -6,11 +6,6 @@ import Call from "./components/Call"
 
 export default function InterviewPage(){
 
-    const {channelName} = useParams()
-
-    
-
-
     return (
 
         <div>

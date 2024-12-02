@@ -101,7 +101,7 @@ export default function SignIn() {
             router.push('/dashboard-admin');
           }
           else{
-            router.push('/dashboard-candidate');
+            router.push('/dashboard-interviewer');
           }
         }, 100);
       } else {

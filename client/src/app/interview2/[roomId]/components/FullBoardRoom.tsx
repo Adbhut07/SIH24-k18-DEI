@@ -13,11 +13,10 @@ import Webcam from 'react-webcam'
 import OpenAI from 'openai'
 import { useEffect } from "react"
 import { useAppSelector } from "@/lib/store/hooks"
-import Conference from "../interview2/[roomId]/components/Conference"
-import CandidateChats from "../interview2/[roomId]/components/CandidateChats"
+import Conference from "./Conference"
+import CandidateChats from './CandidateChats'
 import {v4 as uuid} from 'uuid'
 import { ScrollArea } from "@/components/ui/scroll-area"
-import toast from "react-hot-toast"
 
 
 //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
@@ -29,14 +28,13 @@ import toast from "react-hot-toast"
 //   { id: 3, question: "Describe the process of guided missile trajectory optimization.", relevance: "High", topic: "Missiles", toughness: 5 },
 // ]
 
-export default function FullBoardRoom({leaveChannel}) {
+export default function FullBoardRoom({channel,uid,leaveChannel}) {
 
   const user = useAppSelector((state)=>state.user)
 
 
   const [currentQuestion, setCurrentQuestion] = useState(null)
   const [totalMarks, setTotalMarks] = useState(0)
-  const [answeredQuestions, setAnsweredQuestions] = useState([])
   const [isAsking,setIsAsking] = useState(false);
   const [suggestedQuestions, setSuggestedQuestions] = useState([
     { id: 1, question: "Explain the principles of radar technology.", relevance: "High", topic: "Radar", toughness: 4 },
@@ -46,7 +44,25 @@ export default function FullBoardRoom({leaveChannel}) {
     { id: 5, question: "What are the environmental impacts of supersonic travel?", relevance: "Medium", topic: "Aerospace", toughness: 3 },
     { id: 6, question: "Discuss the role of composite materials in modern engineering.", relevance: "Medium", topic: "Materials Science", toughness: 2 },
     { id: 7, question: "Explain the working principles of a nuclear reactor.", relevance: "High", topic: "Nuclear Engineering", toughness: 5 },
+    { id: 8, question: "What are the primary functions of a flight management system in aviation?", relevance: "High", topic: "Aviation", toughness: 4 },
+    { id: 9, question: "How does GPS technology determine location with high precision?", relevance: "High", topic: "Technology", toughness: 3 },
+    { id: 10, question: "What advancements are being made in battery technology for electric vehicles?", relevance: "Medium", topic: "Energy", toughness: 3 },
+    { id: 11, question: "Explain the role of quantum computing in cryptography.", relevance: "High", topic: "Quantum Computing", toughness: 5 },
+    { id: 12, question: "What are the benefits and risks of using CRISPR for genetic editing?", relevance: "High", topic: "Biotechnology", toughness: 4 },
+    { id: 13, question: "How does blockchain ensure data security in distributed systems?", relevance: "High", topic: "Blockchain", toughness: 4 },
+    { id: 14, question: "Discuss the key steps in the development of space exploration vehicles.", relevance: "High", topic: "Aerospace", toughness: 5 },
+    { id: 15, question: "What is the significance of 5G technology in IoT development?", relevance: "Medium", topic: "Telecommunications", toughness: 3 },
+    { id: 16, question: "How do autonomous vehicles detect and avoid obstacles?", relevance: "High", topic: "AI/ML", toughness: 4 },
+    { id: 17, question: "What are the challenges in designing high-efficiency solar panels?", relevance: "Medium", topic: "Energy", toughness: 3 },
+    { id: 18, question: "Explain the concept of virtual reality and its applications in training.", relevance: "High", topic: "Technology", toughness: 3 },
+    { id: 19, question: "What methods are used to reduce noise in communication systems?", relevance: "Medium", topic: "Signal Processing", toughness: 3 },
+    { id: 20, question: "How is cybersecurity evolving to address modern threats?", relevance: "High", topic: "Cybersecurity", toughness: 4 },
   ]);
+
+
+  const [answeredQuestions, setAnsweredQuestions] = useState([])
+
+
   
 
   const candidateSkills = ' Biochemical Engineering, Biomedical Engineering, Genomics and Bioinformatics, Nanotechnology, Quantum Computing, Robotics, Agricultural Engineering, Energy Systems (Solar, Wind, Nuclear), Neural Engineering, Synthetic Biology'
@@ -60,7 +76,6 @@ export default function FullBoardRoom({leaveChannel}) {
   })
 
 
-  
   async function getSuggestedQuestions() {
     try {
       // Call OpenAI API to fetch suggested questions
@@ -131,19 +146,19 @@ export default function FullBoardRoom({leaveChannel}) {
   
   
 
-if (user.role == 'INTERVIEWER'){
-  useEffect(()=>{
-    getSuggestedQuestions();
-   
+
+useEffect(()=>{
+  getSuggestedQuestions();
+ 
+
+},[])
   
-  },[])
-  
-
-}
 
 
+useEffect(()=>{
+  getSuggestedQuestions();
 
-
+},[])
 
 
 
@@ -163,13 +178,7 @@ if (user.role == 'INTERVIEWER'){
     setSuggestedQuestions(prev => prev.filter(q => q.id !== question.id))
   }
 
-  const handleMarkQuestion = (marks) => {
-    setTotalMarks(totalMarks + marks)
-    setAnsweredQuestions([...answeredQuestions, { question: currentQuestion.question, marks }])
-    
-    setSuggestedQuestions(suggestedQuestions.filter((item,)=>item['id'] != currentQuestion.id))
-    setCurrentQuestion("")
-  }
+
 
 
   const [performanceMetrics, setPerformanceMetrics] = useState({
@@ -193,14 +202,14 @@ if (user.role == 'INTERVIEWER'){
 
         {
           user.role=='INTERVIEWER' && 
-          <div className="flex flex-col h-[97vh] gap-4">
+          <div className="flex flex-col h-[95vh]">
           {/* Scrollable Questions Card */}
-          <Card className="flex-1 overflow-hidden ">
-            <CardHeader className="">
+          <Card className="flex-1 overflow-hidden">
+            <CardHeader className="p-4">
               <CardTitle className="text-orange-500 text-lg">Suggested Questions</CardTitle>
             </CardHeader>
             <CardContent className="p-2 h-full">
-              <ScrollArea className="h-full overflow-y-auto p-1  ">
+              <ScrollArea className="h-full overflow-y-auto">
                 <div className="space-y-2">
                   {currentQuestion && (
                     <Card className="bg-orange-100 p-2">
@@ -210,11 +219,11 @@ if (user.role == 'INTERVIEWER'){
                   )}
                   {suggestedQuestions?.map((q) => (
                     <Card key={q.id} className="p-2">
-                      <p className="text-sm">{q.question}</p>
-                      <div className="flex justify-between items-center mt-1 gap-2 text-[10px] p-1">
-                        <Badge variant="outline" className="text-[10px] font-bold">{q.relevance}</Badge>
-                        <Badge variant="outline" className="text-[10px] font-bold">{q.topic}</Badge>
-                        <Badge variant={'outline'} className="text-[10px] font-bold">{q.toughness}/5</Badge>
+                      <p className="text-xs">{q.question}</p>
+                      <div className="flex justify-between items-center mt-1 text-[10px]">
+                        <Badge variant="outline" className="text-[10px]">{q.relevance}</Badge>
+                        <Badge variant="outline" className="text-[10px]">{q.topic}</Badge>
+                        <Badge variant="outline" className="text-[10px]">{q.toughness}/5</Badge>
                       </div>
                       <Button
                         className="w-full mt-1 h-6 text-[10px] bg-gray-800 text-white"
@@ -232,7 +241,7 @@ if (user.role == 'INTERVIEWER'){
         
           {/* Performance Metrics Card */}
           <Card className="">
-            <CardHeader className="p-2">
+            <CardHeader className="p-4">
               <CardTitle className="text-orange-500 text-lg">Performance Metrics</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
@@ -268,17 +277,13 @@ if (user.role == 'INTERVIEWER'){
       
 
 
-        {/* <Conference  leaveChannel={leaveChannel}/> */}
-        <div className={`grid bg-blue-100 ${user.role=="CANDIDATE"?"col-span-4":"col-span-3"}`}></div>
-
+        <Conference  leaveChannel={leaveChannel}/>
+      
        
       
-      
-
-                
 
 
-        <CandidateChats currentQuestion={currentQuestion} channel={`room1`} uid={uuid}/>
+        <CandidateChats currentQuestion={currentQuestion} channel={channel} uid={uid}/>
 
 
         

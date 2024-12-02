@@ -15,8 +15,7 @@ export function DashboardContent() {
 
   const user = useSelector((state)=>state.user)
 
-  const [upcomingInterviews,setUpcomingInterviews] = useState([
-])
+  const [upcomingInterviews,setUpcomingInterviews] = useState([])
 
 
 
@@ -52,48 +51,7 @@ export function DashboardContent() {
         <p className="text-blue-700">Here's an overview of your progress</p>
       </header>
 
-      {/* <section className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
-            <CardTitle className="text-sm font-medium">Next Interview</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2d 14h 37m</div>
-            <p className="text-xs text-muted-foreground">Frontend Developer at TechCorp</p>
-            <Button className="mt-2 bg-gray-800 text-white " size="sm">Set Reminder</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Interview Preparation</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">75%</div>
-            <Progress value={75} className="mt-2" />
-            <Button className="mt-2  text-white bg-gray-800" size="sm" variant="outline">View Resources</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-            <PenTool className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button className="w-full bg-gray-800" size="sm">Schedule Mock Interview</Button>
-            <Button className="w-full bg-gray-800 text-white" size="sm" variant="outline">Update Profile</Button>
-            <div className="flex space-x-2">
-              <Input placeholder="Enter interview code" className="flex-grow" />
-              <Button className="bg-gray-800" size="sm">
-                <Video className="h-4 w-4 mr-2" />
-                Join
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section> */}
+     
 
 <div className="space-y-4">
 <div className=" text-xl ">Upcoming Interviews</div>
@@ -116,7 +74,7 @@ export function DashboardContent() {
               </div>
 
               
-              <Link href={'/join-interview'}>
+              <Link href={`/interview2/${interview.roomId}`}>
               <Button variant="ghost" size="sm" className="ml-2 shrink-0">
               Join
               <ChevronRight className="w-4 h-4 ml-1" />
