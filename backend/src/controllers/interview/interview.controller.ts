@@ -104,7 +104,7 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
             interviewerId,
           })),
         },
-        roomId: room?.id,
+        roomId: room.id,
       },
       include: {
         candidate: true,
@@ -186,6 +186,7 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
   const { id } = req.params;
   const { status } = req.body; 
 
+
   if (!["SCHEDULED", "IN_PROGRESS", "COMPLETED"].includes(status)) {
     return res.status(400).json({
       success: false,
@@ -226,17 +227,57 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
 };
 
 
-export const findInterviewByRoomId = async (roomId: string) => {
-  return await prisma.interview.findUnique({
-    where: { roomId },
-    include: {
-      candidate: true,
-      interviewers: {
-        include: { interviewer: true },
+
+
+export const getAllInterviews = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const interviews = await prisma.interview.findMany({
+      include: {
+        candidate: true,
+        interviewers: {
+          include: {
+            interviewer: true,
+          },
+        },
       },
-    },
-  });
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Fetched all interviews successfully.",
+      data: interviews,
+    });
+  } catch (error: any) {
+    console.error("Error fetching interviews:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch interviews.",
+      error: error.message || "An unexpected error occurred",
+    });
+  }
 };
+
+
+
+
+
+
+
+
+
+
+
+// export const findInterviewByRoomId = async (roomId: string) => {
+//   return await prisma.interview.findUnique({
+//     where: { roomId },
+//     include: {
+//       candidate: true,
+//       interviewers: {
+//         include: { interviewer: true },
+//       },
+//     },
+//   });
+// };
 
 
 

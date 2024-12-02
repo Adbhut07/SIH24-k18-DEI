@@ -7,6 +7,7 @@ import StoreProvider from "./StoreProvider";
 import {Toaster} from 'react-hot-toast'
 import AgoraRTC, { AgoraRTCProvider, useRTCClient } from "agora-rtc-react";
 import Client from "@/components/Client";
+import { useRouter } from "next/router";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,6 +35,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body

@@ -1,20 +1,29 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState, useCallback } from "react";
-import { io, Socket } from "socket.io-client";
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Send, MessageSquare, LogIn, LogOut } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { io, Socket } from "socket.io-client"
 
-const GroupChat = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [roomId, setRoomId] = useState("");
-  const [username, setUsername] = useState("");
-  const [joined, setJoined] = useState(false);
-  const [messages, setMessages] = useState<{ 
-    id: string; 
-    sender: string; 
-    message: string 
-  }[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [connectionError, setConnectionError] = useState<string | null>(null);
+interface Message {
+  id: string
+  sender: string
+  message: string
+}
+
+export default function ChatCard() {
+  const [socket, setSocket] = useState<Socket | null>(null)
+  const [roomId, setRoomId] = useState("")
+  const [username, setUsername] = useState("")
+  const [joined, setJoined] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputMessage, setInputMessage] = useState("")
+  const [connectionError, setConnectionError] = useState<string | null>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   const connectSocket = useCallback(() => {
     if (roomId.trim() && username.trim()) {
@@ -22,91 +31,89 @@ const GroupChat = () => {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000
-      });
+      })
 
       newSocket.on("connect", () => {
-        console.log(`Connected to server. Socket ID: ${newSocket.id}`);
-        newSocket.emit("joinRoom", roomId);
-        setJoined(true);
-        setSocket(newSocket);
-        setConnectionError(null);
-      });
+        console.log(`Connected to server. Socket ID: ${newSocket.id}`)
+        newSocket.emit("joinRoom", roomId)
+        setJoined(true)
+        setSocket(newSocket)
+        setConnectionError(null)
+      })
 
-      newSocket.on("receiveMessage", (data: { 
-        id: string; 
-        sender: string; 
-        message: string 
-      }) => {
+      newSocket.on("receiveMessage", (data: Message) => {
         setMessages((prevMessages) => {
-          const messageExists = prevMessages.some(msg => msg.id === data.id);
-          
+          const messageExists = prevMessages.some(msg => msg.id === data.id)
           if (!messageExists) {
-            return [...prevMessages, data];
+            return [...prevMessages, data]
           }
-          
-          return prevMessages;
-        });
-      });
+          return prevMessages
+        })
+      })
 
       newSocket.on("connect_error", (error) => {
-        console.error("Connection error:", error);
-        setConnectionError(`Connection failed: ${error.message}`);
-      });
+        console.error("Connection error:", error)
+        setConnectionError(`Connection failed: ${error.message}`)
+      })
 
       newSocket.on("disconnect", (reason) => {
-        console.log("Disconnected:", reason);
-        setConnectionError(`Disconnected: ${reason}`);
-      });
+        console.log("Disconnected:", reason)
+        setConnectionError(`Disconnected: ${reason}`)
+      })
 
       return () => {
-        newSocket.disconnect();
-      };
+        newSocket.disconnect()
+      }
     }
-  }, [roomId, username]);
+  }, [roomId, username])
 
   useEffect(() => {
     if (joined && roomId && username) {
-      const cleanup = connectSocket();
+      const cleanup = connectSocket()
       return () => {
-        cleanup && cleanup();
-      };
+        cleanup && cleanup()
+      }
     }
-  }, [joined, roomId, username, connectSocket]);
+  }, [joined, roomId, username, connectSocket])
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+    }
+  }, [messages])
 
   const handleJoin = () => {
     if (roomId.trim() && username.trim()) {
-      connectSocket();
+      connectSocket()
     }
-  };
+  }
 
   const handleLeave = () => {
     if (socket) {
-      socket.emit("leaveRoom", roomId);
-      socket.disconnect();
+      socket.emit("leaveRoom", roomId)
+      socket.disconnect()
     }
     
-    setSocket(null);
-    setJoined(false);
-    setMessages([]);
-    setRoomId("");
-    setUsername("");
-    setConnectionError(null);
-  };
+    setSocket(null)
+    setJoined(false)
+    setMessages([])
+    setRoomId("")
+    setUsername("")
+    setConnectionError(null)
+  }
 
   const sendMessage = () => {
     if (inputMessage.trim() && socket) {
-      const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       
       const messageData = { 
         id: messageId,
         roomId, 
         message: inputMessage, 
         sender: username 
-      };
+      }
       
-      console.log("Sending message:", messageData);
-      
-      socket.emit("sendMessage", messageData);
+      socket.emit("sendMessage", messageData)
       
       setMessages((prevMessages) => [
         ...prevMessages, 
@@ -115,91 +122,100 @@ const GroupChat = () => {
           sender: username, 
           message: inputMessage 
         }
-      ]);
+      ])
       
-      setInputMessage("");
+      setInputMessage("")
     }
-  };
+  }
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-gray-100 rounded-lg">
+    <Card className="w-1/5 h-[80vh] flex flex-col bg-gradient-to-b from-background to-secondary/20">
+      <CardHeader className="border-b">
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <MessageSquare className="w-5 h-5" />
+            <span>Interview Chat</span>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow overflow-hidden p-0">
+        {!joined ? (
+          <div className="p-4 space-y-4">
+            <Input
+              type="text"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              placeholder="Enter Room ID"
+            />
+            <Input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter Your Name"
+            />
+            <Button onClick={handleJoin} className="w-full">
+              <LogIn className="w-4 h-4 mr-2" />
+              Join
+            </Button>
+          </div>
+        ) : (
+          <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`flex items-start space-x-2 mb-4 ${
+                    message.sender === username ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  <div
+                    className={`rounded-lg p-2 max-w-[80%] ${
+                      message.sender === username
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground'
+                    }`}
+                  >
+                    <p className="text-xs font-semibold mb-1">{message.sender}</p>
+                    {message.message}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </ScrollArea>
+        )}
+      </CardContent>
+      {joined && (
+        <CardFooter className="border-t p-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              sendMessage()
+            }}
+            className="flex w-full items-center space-x-2"
+          >
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              className="flex-grow"
+            />
+            <Button type="submit" size="icon" className="shrink-0">
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </form>
+        </CardFooter>
+      )}
       {connectionError && (
-        <div className="bg-red-100 text-red-700 p-2 rounded mb-4">
+        <div className="bg-destructive/10 text-destructive p-2 text-sm">
           {connectionError}
         </div>
       )}
+    </Card>
+  )
+}
 
-      {!joined ? (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Join Group Chat</h2>
-          <input
-            type="text"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-            placeholder="Enter Room ID"
-            className="w-full p-2 border rounded"
-          />
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter Your Name"
-            className="w-full p-2 border rounded"
-          />
-          <button 
-            onClick={handleJoin} 
-            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Join
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Group Chat Room: {roomId}</h2>
-          <button 
-            onClick={handleLeave} 
-            className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Leave Room
-          </button>
-          
-          <div className="chat-box h-64 overflow-y-auto border p-2 bg-white">
-            {messages.map((msg, index) => (
-              <div 
-                key={msg.id} 
-                className={`mb-2 p-2 rounded ${
-                  msg.sender === username 
-                    ? 'bg-blue-100 text-right' 
-                    : 'bg-gray-100'
-                }`}
-              >
-                <strong>{msg.sender}:</strong> {msg.message}
-              </div>
-            ))}
-          </div>
-          
-          <div className="flex">
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-grow p-2 border rounded-l"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') sendMessage();
-              }}
-            />
-            <button 
-              onClick={sendMessage} 
-              className="bg-green-500 text-white p-2 rounded-r hover:bg-green-600"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default GroupChat;
