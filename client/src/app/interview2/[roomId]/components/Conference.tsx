@@ -4,10 +4,13 @@ import { MicOff } from "lucide-react";
 import { useState } from "react";
 import RemoteUsers from "./RemoteUsers";
 import UserControls from "./UserControls";
+import { useAppSelector } from "@/lib/store/hooks";
 
 
 
 export default function Conference({leaveChannel}) {
+
+    const user = useAppSelector((state)=>state.user)
 
     // Local User controls
     const [micOn, setMicOn] = useState<boolean>(true);
@@ -22,6 +25,9 @@ export default function Conference({leaveChannel}) {
     const uid = useCurrentUID()
     console.log('User ', uid)
 
+
+    
+
     
 
 
@@ -29,20 +35,21 @@ export default function Conference({leaveChannel}) {
     return (
 
             
-            <Card className="col-span-3 ">
+            <Card className={`grid ${user.role=="CANDIDATE"?"col-span-4":"col-span-3"}`}>
                 <CardContent className="p-4 ">
 
 
                     <div className=" h-[75vh] flex flex-col" >
                         <div className="w-full h-[70%] bg-muted aspect-video rounded-lg flex items-center justify-center overflow-hidden">
                             { (localCameraTrack?.muted) && <p className="text-muted-foreground">Interviewer</p>}
-                            {/* <Webcam height={720} width={1280} /> */}
 
-                            {!(localCameraTrack?.muted) && <div className="h-full w-full">
+                            <div className="h-full w-full">
                                 <LocalUser
                                     audioTrack={localMicrophoneTrack}
                                     videoTrack={localCameraTrack}
                                     micOn={micOn}
+                                    playAudio={false}
+                                    playVideo={cameraOn}
                                     cameraOn={cameraOn}
                                 >
                                     <samp className="bg-black text-white px-1 text-sm bottom-0 absolute flex">
@@ -52,7 +59,7 @@ export default function Conference({leaveChannel}) {
                                         )}
                                     </samp>
                                 </LocalUser>
-                            </div>}
+                            </div>
 
 
                         </div>

@@ -13,7 +13,7 @@ const createInterviewSessionSchema = z.object({
   scheduledAt: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Scheduled date must be a valid ISO date",
   }),
-  usePredefined: z.boolean().optional(),
+  channelName: z.string()
 });
 
 
@@ -27,7 +27,6 @@ const updateInterviewSessionSchema = z.object({
     scheduledAt: z.string().optional().refine((date) => date ? !isNaN(Date.parse(date)) : true, {
       message: "Scheduled date must be a valid ISO date",
     }),
-    status: z.enum(["SCHEDULED", "IN_PROGRESS", "COMPLETED"]).optional(),
   }),
 });
 
@@ -55,7 +54,7 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
     });
   }
 
-  const { title, description, candidateId, interviewerIds, scheduledAt, usePredefined } = parseResult.data;
+  const { title, description, candidateId, interviewerIds, scheduledAt, channelName } = parseResult.data;
 
   try {
     const candidate = await prisma.user.findUnique({
@@ -80,19 +79,36 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
       });
     }
 
+    const room = await prisma.room.findFirst({
+      where: {
+        channel: channelName,
+        inUse: false,
+      }
+    })
+
+    if(!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      })
+    }
+
     const interview = await prisma.interview.create({
       data: {
         title,
         description,
         candidateId,
         scheduledAt: new Date(scheduledAt),
-        usePredefined: usePredefined ?? false,
         interviewers: {
           create: interviewerIds.map((interviewerId) => ({
             interviewerId,
           })),
         },
+<<<<<<< HEAD
         
+=======
+        roomId: room.id,
+>>>>>>> d5f654d205b8e800e111a72e1e04f1563e871d6f
       },
       include: {
         candidate: true,
@@ -104,10 +120,20 @@ export const createInterviewSession = async (req: Request, res: Response): Promi
       },
     });
 
+
+    await prisma.room.update({
+      where: {
+        id: room.id
+      },
+      data: {
+        inUse: true,
+      }
+    });
+
     return res.status(201).json({
       success: true,
       message: "Interview session created successfully",
-      interview,
+      data: {interview, room},
     });
   } catch (error: any) {
     console.error("Error creating interview session:", error);
@@ -133,7 +159,7 @@ export const updateInterviewSession = async (req: Request, res: Response): Promi
   }
 
   const { id } = parseResult.data.params;
-  const { title, description, scheduledAt, status } = parseResult.data.body;
+  const { title, description, scheduledAt } = parseResult.data.body;
 
   try {
     const updatedInterview = await prisma.interview.update({
@@ -142,7 +168,6 @@ export const updateInterviewSession = async (req: Request, res: Response): Promi
         ...(title && { title }),
         ...(description && { description }),
         ...(scheduledAt && { scheduledAt: new Date(scheduledAt) }),
-        ...(status && { status }),
       },
     });
 
@@ -165,6 +190,7 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
   const { id } = req.params;
   const { status } = req.body; 
 
+
   if (!["SCHEDULED", "IN_PROGRESS", "COMPLETED"].includes(status)) {
     return res.status(400).json({
       success: false,
@@ -177,6 +203,17 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
       where: { id },
       data: { status },
     });
+
+    if(req.body.status === "COMPLETED") {
+      await prisma.room.update({
+        where: {
+          id: updatedStatus.roomId || "",
+        },
+        data: {
+          inUse: false,
+        }
+      })
+    }
 
     return res.status(200).json({
       success: true,
@@ -194,17 +231,92 @@ export const updateInterviewStatus = async (req: Request, res: Response): Promis
 };
 
 
-export const findInterviewByRoomId = async (roomId: string) => {
-  return await prisma.interview.findUnique({
-    where: { roomId },
-    include: {
-      candidate: true,
-      interviewers: {
-        include: { interviewer: true },
+
+
+export const getAllInterviews = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const interviews = await prisma.interview.findMany({
+      include: {
+        candidate: true,
+        interviewers: {
+          include: {
+            interviewer: true,
+          },
+        },
       },
-    },
-  });
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Fetched all interviews successfully.",
+      data: interviews,
+    });
+  } catch (error: any) {
+    console.error("Error fetching interviews:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch interviews.",
+      error: error.message || "An unexpected error occurred",
+    });
+  }
 };
+
+
+export const getInterviewById = async (req: Request, res: Response): Promise<any> => {
+  const { id } = req.params;
+
+  try {
+    const interview = await prisma.interview.findUnique({
+      where: { id },
+      include: {
+        candidate: true,
+        interviewers: {
+          include: {
+            interviewer: true,
+          },
+        },
+      },
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Fetched interview successfully.",
+      data: interview,
+    });
+  } catch (error: any) {
+    console.error("Error fetching interview:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch interview.",
+      error: error.message || "An unexpected error occurred",
+    });
+  }
+};
+
+
+
+
+
+
+
+// export const findInterviewByRoomId = async (roomId: string) => {
+//   return await prisma.interview.findUnique({
+//     where: { roomId },
+//     include: {
+//       candidate: true,
+//       interviewers: {
+//         include: { interviewer: true },
+//       },
+//     },
+//   });
+// };
 
 
 

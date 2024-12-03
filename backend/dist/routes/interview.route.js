@@ -8,6 +8,7 @@ const interview_controller_1 = require("../controllers/interview/interview.contr
 const auth_middleware_1 = require("../utils/auth.middleware");
 const router = express_1.default.Router();
 router.post("/create", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.createInterviewSession);
-router.patch("/interview-update", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.updateInterviewSession);
-router.put("/status", interview_controller_1.updateInterviewStatus);
+router.patch("/interview-update/:id", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.updateInterviewSession);
+router.put("/status/:id", interview_controller_1.updateInterviewStatus);
+router.get("/interviews", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.getAllInterviews);
 exports.default = router;

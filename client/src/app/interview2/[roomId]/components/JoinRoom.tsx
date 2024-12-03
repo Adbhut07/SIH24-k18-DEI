@@ -1,6 +1,6 @@
 "use client"
 
-import { LoaderCircle, Users, Key, BookOpen, LogIn } from 'lucide-react'
+import { LoaderCircle, Users, Key, BookOpen, LogIn, PersonStandingIcon, User } from 'lucide-react'
 import { Dispatch, SetStateAction, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from 'next/image'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
 type JoinRoomProps = {
-  onJoin: (channel: string, token: string) => void
+  onJoin: (channel: string, token: string,appId:string,uId:Number) => void
   isError: boolean
   setIsError: Dispatch<SetStateAction<boolean>>
   isLoading: boolean
@@ -20,6 +22,7 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
   const [channel, setChannel] = useState<string>("")
   const [token, setToken] = useState<string>("")
   const isDisabled = useMemo(() => !channel || !token, [channel, token])
+  const [UID,setUID] = useState('')
 
   const interviewRules = [
     "Be punctual and join the room 5 minutes before the scheduled time.",
@@ -38,6 +41,57 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
     "Thank the interviewer for their time at the end of the interview.",
     "Follow up with a thank-you email within 24 hours after the interview."
   ]
+
+
+
+  // we have to do some logic here to dynamically set the appid, channelname,app certificate
+  // and we have to generate a token first
+
+
+  const appid = "f1c290c9f1494b18a9515fb615b4b007"
+  const appCertificate = "2825dd33f07348cba4a141f0dd878250"
+  const uid = 8456
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const handleGenerateToken = async () => {
+
+    const rawData = {
+      appId: appid,
+      appCertificate: appCertificate,
+      channelName: channel,
+      uid: Number(UID)
+
+    }
+
+    try {
+
+
+
+      const response = await axios.post(`http://localhost:5454/api/v1/agoraRoom/agoraToken`, rawData);
+     
+      setToken(response?.data?.token)
+      toast.success('Token Generated')
+
+
+    }
+    catch (error) {
+      console.log(error);
+      setIsError(true)
+    }
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-4">
@@ -65,8 +119,8 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
 
 
           <div className='flex justify-center'>
-            <Image src='/drdologo.jpeg'   width={130} height={130} quality={100} alt='DRDO LOGO' ></Image>
-            </div>
+            <Image src='/drdologo.jpeg' width={130} height={130} quality={100} alt='DRDO LOGO' ></Image>
+          </div>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold flex items-center justify-center">
               <Users className="mr-2" />
@@ -75,7 +129,7 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
             <CardDescription>Enter the room details to join your interview</CardDescription>
           </CardHeader>
 
-          
+
           <CardContent>
             <div className="grid gap-4">
               <div className="grid gap-2">
@@ -94,26 +148,25 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="token-input" className="flex items-center">
-                  <Key className="mr-2 h-4 w-4" />
-                  Token
-                </Label>
-                <Input
-                  id="token-input"
-                  onChange={(e) => {
-                    setToken(e.target.value)
-                    setIsError(false)
-                  }}
-                  placeholder="Enter token"
-                  value={token}
-                  type="password"
-                />
+
+                <div>
+                  <Label className='flex items-center mb-1 '> <User className='mr-2 h-4 w-4' />UID</Label>
+                  
+                  <Input id="UID"  value={UID} onChange={(e)=>{setUID(e.target.value)}} />
+                  </div>
+                
+
+                <Input id="token" onChange={(e)=>setToken(e.target.value)} value={token} placeholder='Token will be pasted here' />
+
+                <Button onClick={handleGenerateToken}>Generate Token</Button>
+
+
               </div>
               {isError && <span className="text-center text-destructive">Invalid room or token</span>}
               <Button
                 className="w-full"
                 disabled={isDisabled || isError}
-                onClick={() => onJoin(channel, token)}
+                onClick={() => onJoin(channel,token,appid,UID)}
               >
                 <LogIn className="mr-2 h-4 w-4" />
                 Join Room

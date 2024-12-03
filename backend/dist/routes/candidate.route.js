@@ -7,5 +7,5 @@ const express_1 = __importDefault(require("express"));
 const candidate_controller_1 = require("../controllers/candidate/candidate.controller");
 const auth_middleware_1 = require("../utils/auth.middleware");
 const router = express_1.default.Router();
-router.get("/:userId/interviews", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(["CANDIDATE", "ADMIN"]), candidate_controller_1.getCandidateInterviews);
+router.get("/:email/interviews", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(["CANDIDATE", "ADMIN"]), candidate_controller_1.getCandidateInterviews);
 exports.default = router;
