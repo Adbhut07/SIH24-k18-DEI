@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/candidate/sidebar"
 import { Navbar } from "@/components/candidate/navbar"
-import { DashboardContent } from "@/components/candidate/dashboard-content"
+import DashboardContent from "@/components/candidate/dashboard-content";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/lib/store/hooks";
@@ -25,10 +25,10 @@ export default function Dashboard() {
   
   return (
     <div className="flex h-screen ">
-      <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
+      
+      <div className="flex flex-col flex-1 overflow-hidden ">
         <Navbar />
-        <main className="flex-1 overflow-y-auto bg-background">
+        <main className="flex-1 overflow-y-auto bg-gray-200 p-4">
           <DashboardContent />
         </main>
       </div>

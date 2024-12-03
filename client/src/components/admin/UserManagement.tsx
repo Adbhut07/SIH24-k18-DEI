@@ -157,7 +157,7 @@ export function UserManagement() {
 
 
   return (
-    <Card>
+    <Card id='users-management'>
       <CardHeader>
         <CardTitle>User Management</CardTitle>
       </CardHeader>
