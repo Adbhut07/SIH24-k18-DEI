@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/lib/store/hooks"
-import { LogOutIcon } from "lucide-react"
+import { LogOut, LogOutIcon } from "lucide-react"
 import { Button } from "./ui/button"
 import { useRouter } from "next/navigation"
 import { clearUser } from "@/lib/store/features/user/userSlice"
@@ -25,9 +25,9 @@ const Logout = ()=>{
 
 
     return (
-        <Button onClick={handleLogout} className='flex h-auto w-auto  bg-white gap-2 text-xs text-red-500  items-center justify-center hover:text-white hover:bg-red-500  '>
-        <span className='font-medium'>Logout</span>
-        <LogOutIcon height={20} width={20}></LogOutIcon>
+        <Button onClick={handleLogout} variant="ghost" size="sm" className="text-white hover:bg-gray-600 hover:text-white">
+        <LogOut className="h-4 w-4 mr-2" />
+        Logout
       </Button>
    
     )

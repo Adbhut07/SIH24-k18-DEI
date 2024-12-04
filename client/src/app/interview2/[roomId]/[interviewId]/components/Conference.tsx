@@ -43,7 +43,7 @@ export default function Conference({leaveChannel}) {
                         <div className="w-full h-[70%] bg-muted aspect-video rounded-lg flex items-center justify-center overflow-hidden">
                             { (localCameraTrack?.muted) && <p className="text-muted-foreground">Interviewer</p>}
 
-                            <div className="h-full w-full">
+                            <div className="h-full w-[50%] object-contain">
                                 <LocalUser
                                     audioTrack={localMicrophoneTrack}
                                     videoTrack={localCameraTrack}
@@ -51,6 +51,7 @@ export default function Conference({leaveChannel}) {
                                     playAudio={false}
                                     playVideo={cameraOn}
                                     cameraOn={cameraOn}
+                                    
                                 >
                                     <samp className="bg-black text-white px-1 text-sm bottom-0 absolute flex">
                                         {uid}

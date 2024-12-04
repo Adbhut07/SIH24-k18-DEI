@@ -228,7 +228,7 @@ const handleScheduleSubmit = async ()=>{
 
 
   return (
-    <div className="space-y-4 border-2 p-5 rounded-xl">
+    <div className="space-y-4 border-2 p-5 rounded-xl bg-white w-[40%]">
       <h2 className="text-2xl font-bold text-gray-800">Schedule Interview</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

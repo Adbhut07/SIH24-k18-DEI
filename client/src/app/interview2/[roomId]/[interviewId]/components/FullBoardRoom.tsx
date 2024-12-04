@@ -17,6 +17,9 @@ import Conference from "./Conference"
 import CandidateChats from './CandidateChats'
 import {v4 as uuid} from 'uuid'
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useParams } from "next/navigation"
+import toast from "react-hot-toast"
+import axios from "axios"
 
 
 //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
@@ -31,6 +34,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 export default function FullBoardRoom({channel,uid,leaveChannel}) {
 
   const user = useAppSelector((state)=>state.user)
+
+  const {roomId,interviewId} = useParams();
 
 
   const [currentQuestion, setCurrentQuestion] = useState(null)
@@ -60,7 +65,10 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
   ]);
 
 
+
   const [answeredQuestions, setAnsweredQuestions] = useState([])
+
+
 
 
   
@@ -132,7 +140,7 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
       // Update state with the parsed questions
       setSuggestedQuestions(parsedQuestions);
   
-      toast.success('Candidate-specific suggested questions fetched through AI');
+      
   
       if (parsedQuestions.length === 0) {
         console.warn("No valid questions could be parsed from the response.");
@@ -143,22 +151,25 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
       console.error("Error in getSuggestedQuestions:", error.message);
     }
   }
+
+
+
+
   
   
 
-
-useEffect(()=>{
-  getSuggestedQuestions();
- 
-
-},[])
+if (user.role == 'INTERVIEWER'){
+  useEffect(()=>{
+    getSuggestedQuestions();
+   
   
+  },[])
+
+}
 
 
-useEffect(()=>{
-  getSuggestedQuestions();
 
-},[])
+
 
 
 
@@ -283,7 +294,7 @@ useEffect(()=>{
       
 
 
-        <CandidateChats currentQuestion={currentQuestion} channel={channel} uid={uid}/>
+        <CandidateChats  currentQuestion={currentQuestion} channel={channel} uid={uid}/>
 
 
         

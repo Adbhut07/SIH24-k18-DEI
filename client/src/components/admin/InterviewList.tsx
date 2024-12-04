@@ -169,7 +169,7 @@ export function InterviewList() {
   }, [])
 
   return (
-    <Card className="w-[70%]">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Interview List</CardTitle>
       </CardHeader>

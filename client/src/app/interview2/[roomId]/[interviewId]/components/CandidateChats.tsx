@@ -9,6 +9,8 @@ import { Send, MessageSquare, LogIn, LogOut, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { io, Socket } from "socket.io-client"
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
+import { useParams } from 'next/navigation'
+import axios from 'axios'
 
 interface Message {
     id: string
@@ -28,23 +30,33 @@ export default function ChatCard({ channel, uid, currentQuestion }) {
     const scrollAreaRef = useRef<HTMLDivElement>(null)
     const [inputQuestion, setInputQuestion] = useState(null)
 
+    const[panelMembers,setPanelMembers] = useState([])
+    const {roomIdAgora,interviewId} = useParams()
+
+    
+
+
+   
 
 
 
+     
+const getPanelMembers = async ()=>{
+    try{
+        const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`);
+
+        setPanelMembers(response?.data?.data?.interviewers)
 
 
+    }
+    catch(error){
+        console.log(error)
+    }
+}
 
-
-
-
-
-
-
-    const panelMembers = [
-        { name: 'Alice Smith', role: 'Interviewer', avatar: '/placeholder.svg?height=32&width=32' },
-        { name: 'Bob Johnson', role: 'Technical Expert', avatar: '/placeholder.svg?height=32&width=32' },
-        { name: 'Carol Williams', role: 'HR Representative', avatar: '/placeholder.svg?height=32&width=32' },
-    ]
+useEffect(()=>{
+  getPanelMembers();
+})
 
     const connectSocket = useCallback(() => {
         if (roomId.trim() && username.trim()) {
@@ -222,10 +234,10 @@ export default function ChatCard({ channel, uid, currentQuestion }) {
                 <CardContent className="py-2">
                     <div className="flex  flex-col gap-2 ">
                         {panelMembers?.map((member) => (
-                            <div key={member.name} className=" ">
+                            <div key={member.interviewer.id} className=" ">
                                 <div className="text-xs text-center justify-between flex gap-4">
-                                    <div className="font-sm">{member.name}</div>
-                                    <div className="font-sm text-muted-foreground ">{member.role}</div>
+                                    <div className="font-sm">{member.interviewer.name}</div>
+                                    <div className="font-sm text-muted-foreground ">{member.interviewer.email}</div>
                                 </div>
                             </div>
                         ))}

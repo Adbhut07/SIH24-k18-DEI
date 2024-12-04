@@ -1,7 +1,7 @@
 "use client"
 
 import { LoaderCircle, Users, Key, BookOpen, LogIn, PersonStandingIcon, User } from 'lucide-react'
-import { Dispatch, SetStateAction, useMemo, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from 'next/image'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import { useParams } from 'next/navigation'
 
 type JoinRoomProps = {
   onJoin: (channel: string, token: string,appId:string,uId:Number) => void
@@ -48,10 +49,37 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
   // and we have to generate a token first
 
 
-  const appid = "f1c290c9f1494b18a9515fb615b4b007"
-  const appCertificate = "2825dd33f07348cba4a141f0dd878250"
-  const uid = 8456
+  // const appid = "f1c290c9f1494b18a9515fb615b4b007"
+  // const appCertificate = "2825dd33f07348cba4a141f0dd878250"
+  // const uid = 8456
 
+
+  const [appid,setAppid] = useState("");
+  const [appCertificate,setAppCertificate] = useState("");
+
+
+
+  const {roomId,interviewId} = useParams();
+
+  
+
+
+
+
+  const fetchRoomDetails =  async ()=>{
+
+    const response = await axios.get(`http://localhost:5454/api/v1/agoraRoom/getRoom/${roomId}`)
+    const roomDetails = response?.data?.data
+    setChannel(roomDetails?.channel)
+    setAppCertificate(roomDetails?.appCertificate);
+    setAppid(roomDetails?.appId)
+  }
+
+  useEffect(()=>{
+    fetchRoomDetails()
+    
+    
+  },[])
 
 
 
@@ -143,6 +171,7 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
                     setChannel(e.target.value)
                     setIsError(false)
                   }}
+                  disabled
                   placeholder="Enter channel"
                   value={channel}
                 />
