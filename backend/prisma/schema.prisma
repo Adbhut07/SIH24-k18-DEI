@@ -60,6 +60,7 @@ model CandidateProfile {
 
   resume        String? // S3 URL for uploaded resume
   medicalReport String? // S3 URL for uploaded medical report
+  image         String? // Supabase url for image
   tenthMarks    String? // S3 URL or JSON for marks
   twelfthMarks  String? // S3 URL or JSON for marks
   gateScore     String?
@@ -110,19 +111,23 @@ model Room {
 }
 
 model Evaluation {
-  id                 String            @id @default(uuid()) @db.Uuid
-  interviewId        String            @db.Uuid
-  interview          Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  questionDetails    Json              // Array of JSON objects containing question, topic, and marks and etc.
-  feedbackInterviewer Json             // JSON containing feedback given by interviewers
-  feedbackCandidate  Json              // JSON containing feedback from the candidate
-  relevancyAI        Float?            // Relevancy score given by AI
-  relevancyCandidate Float?            // Relevancy score given by the candidate
-  idealAnswerAI      Json?             // AI-provided ideal answers for the questions
-  marksAI            Float?            // Marks given by AI for the candidate's answers
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  id                  String    @id @default(uuid()) @db.Uuid
+  interviewId         String    @db.Uuid
+  interview           Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  
+  questionDetails     Json      // Array of JSON objects containing question details and marks
+  feedbackInterviewer Json?     // Optional JSON containing feedback from interviewers
+  feedbackCandidate   Json?     // Optional JSON containing feedback from the candidate
+
+  relevancyAI         Float?    // Optional AI-generated relevancy score
+  relevancyCandidate  Float?    // Optional candidate-provided relevancy score
+  idealAnswerAI       Json?     // Optional AI-generated ideal answers
+  marksAI             Float?    // Optional AI-generated marks
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
+
 
 
 // model AskedQuestion {

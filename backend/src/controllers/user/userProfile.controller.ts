@@ -25,6 +25,7 @@ const candidateProfileSchema = z.object({
   education: z.any().optional(), 
   skills: z.array(z.string()).optional(),
   achievements: z.array(z.string()).optional(),
+  image: z.string().optional(),
 });
 
 export const createCandidateProfile = async (req: Request, res: Response): Promise<any> => {
@@ -39,9 +40,11 @@ export const createCandidateProfile = async (req: Request, res: Response): Promi
       return res.status(404).json({ success: false, message: 'Candidate not found' });
     }
 
-    if (user.role !== 'CANDIDATE') {
-      return res.status(400).json({ success: false, message: 'User is not a candidate' });
-    }
+    // interviewers can also create profile
+    
+    // if (user.role !== 'CANDIDATE') {
+    //   return res.status(400).json({ success: false, message: 'User is not a candidate' });
+    // }
 
     const candidateProfile = await prisma.candidateProfile.create({
       data: validatedData,
@@ -104,6 +107,7 @@ const updateCandidateProfileSchema = z.object({
   education: z.any().optional(),
   skills: z.array(z.string()).optional(),
   achievements: z.array(z.string()).optional(),
+  image: z.string().optional(),
 });
 
 export const updateCandidateProfile = async (req: Request, res: Response): Promise<any> => {
@@ -112,13 +116,13 @@ export const updateCandidateProfile = async (req: Request, res: Response): Promi
 
     const updateData = updateCandidateProfileSchema.parse(req.body);
 
-    const existingProfile = await prisma.candidateProfile.findUnique({ where: { id } });
+    const existingProfile = await prisma.candidateProfile.findUnique({ where: { candidateId:id } });
     if (!existingProfile) {
       return res.status(404).json({ success: false, message: 'Candidate profile not found' });
     }
 
     const updatedProfile = await prisma.candidateProfile.update({
-      where: { id },
+      where: { candidateId:id },
       data: updateData,
     });
 

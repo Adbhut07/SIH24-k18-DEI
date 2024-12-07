@@ -1,56 +1,115 @@
-"use client"
+// 'use client'
+// import React, { useEffect, useState } from 'react';
+// import { supabase, setSupabaseToken } from '../../lib/supabase'
+// import Cookies from 'js-cookie';
+// import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+// import { updateUserImage } from '@/lib/store/features/user/userSlice';
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Mic, MicOff, Video, VideoOff, MessageSquare, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react'
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { Terminal } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
-import Webcam from 'react-webcam'
-import OpenAI from 'openai'
-import { useEffect } from "react"
-import { useAppSelector } from "@/lib/store/hooks"
-import Conference from "../interview2/[roomId]/components/Conference"
-import CandidateChats from "../interview2/[roomId]/components/CandidateChats"
-import {v4 as uuid} from 'uuid'
-import { ScrollArea } from "@/components/ui/scroll-area"
-import toast from "react-hot-toast"
+// const Check = () => {
+
+//   const user = useAppSelector((state) => state.user);
+//   const [file, setFile] = useState(null);
+//   const [uploading, setUploading] = useState(false);
+//   const [url, setUrl] = useState(user.image);
 
 
-//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
+ 
+//   const dispatch = useAppDispatch();
 
-// // Suggested questions data
-// var suggestedQuestions = [
-//   { id: 1, question: "Explain the principles of radar technology.", relevance: "High", topic: "Radar", toughness: 4 },
-//   { id: 2, question: "What are the key challenges in developing stealth aircraft?", relevance: "Medium", topic: "Aerospace", toughness: 3 },
-//   { id: 3, question: "Describe the process of guided missile trajectory optimization.", relevance: "High", topic: "Missiles", toughness: 5 },
-// ]
-
-export default function FullBoardRoom({leaveChannel}) {
-
-  const user = useAppSelector((state)=>state.user)
+//   console.log(user.image)
 
 
-  const [currentQuestion, setCurrentQuestion] = useState(null)
-  const [totalMarks, setTotalMarks] = useState(0)
-  const [answeredQuestions, setAnsweredQuestions] = useState([])
-  const [isAsking,setIsAsking] = useState(false);
-  const [suggestedQuestions, setSuggestedQuestions] = useState([
-    { id: 1, question: "Explain the principles of radar technology.", relevance: "High", topic: "Radar", toughness: 4 },
-    { id: 2, question: "What are the key challenges in developing stealth aircraft?", relevance: "Medium", topic: "Aerospace", toughness: 3 },
-    { id: 3, question: "Describe the process of guided missile trajectory optimization.", relevance: "High", topic: "Missiles", toughness: 5 },
-    { id: 4, question: "How do machine learning models improve predictive maintenance?", relevance: "High", topic: "AI/ML", toughness: 4 },
-    { id: 5, question: "What are the environmental impacts of supersonic travel?", relevance: "Medium", topic: "Aerospace", toughness: 3 },
-    { id: 6, question: "Discuss the role of composite materials in modern engineering.", relevance: "Medium", topic: "Materials Science", toughness: 2 },
-    { id: 7, question: "Explain the working principles of a nuclear reactor.", relevance: "High", topic: "Nuclear Engineering", toughness: 5 },
-  ]);
-  
 
-  const candidateSkills = ' Biochemical Engineering, Biomedical Engineering, Genomics and Bioinformatics, Nanotechnology, Quantum Computing, Robotics, Agricultural Engineering, Energy Systems (Solar, Wind, Nuclear), Neural Engineering, Synthetic Biology'
+//   // Handle file selection
+//   const handleFileChange = (e) => {
+//     const selectedFile = e.target.files[0];
+//     setFile(selectedFile);
+//   };
 
+//   // Upload file to Supabase
+//   const uploadFile = async () => {
+//     if (!file) {
+//       alert('Please select a file to upload.');
+//       return;
+//     }
+
+
+
+//     setUploading(true);
+
+
+//     const fileName = `${Date.now()}-${file.name}`;
+
+//     try {
+//       // Upload the file to Supabase Storage
+//       const { data, error } = await supabase.storage
+//         .from('sih-profile') // Replace with your storage bucket name
+//         .upload(`${user.id}/${fileName}`, file);
+
+//       if (error) throw error;
+
+//       // Get the public URL of the uploaded file
+//       const fileUrl = supabase.storage.from(`sih-profile/${user.id}`).getPublicUrl(fileName)
+//       setUrl(fileUrl?.data?.publicUrl);
+//       console.log(fileUrl)
+
+//       alert('File uploaded successfully!');
+//     } catch (error) {
+//       console.error('Error uploading file:', error);
+//       alert('Error uploading file.');
+//     } finally {
+//       setUploading(false);
+//     }
+//   };
+
+
+//   useEffect(()=>{
+//    dispatch(updateUserImage({image:url}))
+
+//   },[url])
+
+//   return (
+//     <div>
+//       <h1>Upload Photo</h1>
+//       <input type="file" onChange={handleFileChange} />
+//       <button onClick={uploadFile} disabled={uploading}>
+//         {uploading ? 'Uploading...' : 'Upload'}
+//       </button>
+
+//       {url && (
+//         <div>
+//           <h3>Uploaded File:</h3>
+//           <h1>hey</h1>
+//           <img src={url} alt="Uploaded File" />
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Check;
+
+
+
+
+
+'use client'
+
+import axios from "axios";
+import OpenAI from "openai";
+import { useEffect, useState } from "react";
+
+
+const Check = () => {
+
+  const [suggestedQuestions, setSuggestedQuestions] = useState([]);
+  const [currentMarks, setCurrentMarks] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+
+  const interviewId = "90e0f4cd-51af-44a3-95b2-26dfe9a473cb"
+
+  // Candidate skills (replace with actual skills)
+const candidateSkills = "JavaScript, React, Node.js, SQL, Data Structures";
 
 
   const openai = new OpenAI({
@@ -59,8 +118,43 @@ export default function FullBoardRoom({leaveChannel}) {
     dangerouslyAllowBrowser: true
   })
 
+  const prompt = `Generate 10 interview questions related to these skills: ${candidateSkills}.
 
-  
+Return the result as a **valid JSON array** where each element is a JSON object. Ensure the JSON is properly formatted with no syntax errors. Each object should have the following fields:
+
+- **"question"**: A string representing the interview question.
+- **"topic"**: A string indicating the specific topic related to the skills.
+- **"relevance"**: A string indicating the relevance of the question to the skills (must be one of: "high", "medium", "low").
+- **"toughness"**: An integer between 1 and 5 indicating the toughness of the question.
+- **"difficulty"**: A string indicating the difficulty level (must be one of: "easy", "intermediate", "hard").
+- **"category"**: A string representing a general category or subfield related to the question.
+- **"ai_answer"**: A string containing a detailed AI-generated answer (approximately 3-5 sentences).
+
+DO NOT ADD ANY OTHER COMMENTS OR TEXT IN THE RESPONSE, I JUST WANT THE JSON ARRAY. 
+
+**Example Output:**
+[
+  {
+    "question": "What is the time complexity of a binary search algorithm?",
+    "topic": "Algorithms",
+    "relevance": "high",
+    "toughness": 3,
+    "difficulty": "intermediate",
+    "category": "Computer Science",
+    "ai_answer": "The time complexity of a binary search algorithm is O(log n). Binary search works by repeatedly dividing the search interval in half, which allows it to quickly narrow down the target value. This efficiency makes it ideal for searching in sorted datasets."
+  },
+  {
+    "question": "How does a convolutional neural network (CNN) process image data?",
+    "topic": "Machine Learning",
+    "relevance": "high",
+    "toughness": 4,
+    "difficulty": "hard",
+    "category": "Deep Learning",
+    "ai_answer": "A CNN processes image data by applying convolutional filters to extract features such as edges and textures. These features are then passed through multiple layers of convolution, pooling, and fully connected layers. This structure helps the network learn hierarchical patterns in the image, which is crucial for tasks like object detection and image classification."
+  }
+]
+`
+
   async function getSuggestedQuestions() {
     try {
       // Call OpenAI API to fetch suggested questions
@@ -69,8 +163,8 @@ export default function FullBoardRoom({leaveChannel}) {
         messages: [
           {
             role: "user",
-            content: `Give 15 interview questions related to these topics in comma separated values,: ${candidateSkills}. The format should be: questionid,question,relevance(high,medium,low),topic,toughness(out of 5) , All these values without spaces. Remove any other text in the response`,
-          },
+            content: prompt,
+           },
         ],
       });
   
@@ -79,45 +173,16 @@ export default function FullBoardRoom({leaveChannel}) {
         throw new Error("No content received from the AI model.");
       }
   
-      console.log("Raw Response:", responseContent);
+       console.log(responseContent)
   
-      // Function to parse raw data into structured array
-      const parseData = (data: string) => {
-        try {
-          // Split the data by lines, then map each line to structured object
-          return data
-            .trim() // Remove leading/trailing whitespace
-            .split("\n") // Split into lines
-            .map((line) => {
-              // Split each line by commas and ensure there are no extra spaces
-              const [id, question, relevance, topic, toughness] = line.split(",");
-              
-              if (!id || !question || !relevance || !topic || !toughness) {
-                throw new Error(`Invalid data format in line: "${line}"`);
-              }
-  
-              // Return an object with cleaned-up data
-              return {
-                id: parseInt(id.trim(), 10),
-                question: question.trim(),
-                relevance: relevance.trim().toLowerCase(),
-                topic: topic.trim().toLowerCase(),
-                toughness: parseInt(toughness.trim(), 10),
-              };
-            });
-        } catch (error: any) {
-          console.error("Error while parsing data:", error.message);
-  
-        }
-      };
-  
-      // Parse the raw data
-      const parsedQuestions = parseData(responseContent);
+      const parsedQuestions = JSON.parse(responseContent+']');
+      console.log(parsedQuestions)
   
       // Update state with the parsed questions
       setSuggestedQuestions(parsedQuestions);
+      setCurrentQuestion(parsedQuestions[0]);
   
-      toast.success('Candidate-specific suggested questions fetched through AI');
+      
   
       if (parsedQuestions.length === 0) {
         console.warn("No valid questions could be parsed from the response.");
@@ -128,166 +193,73 @@ export default function FullBoardRoom({leaveChannel}) {
       console.error("Error in getSuggestedQuestions:", error.message);
     }
   }
-  
-  
 
-if (user.role == 'INTERVIEWER'){
-  useEffect(()=>{
-    getSuggestedQuestions();
-   
+
   
-  },[])
-  
+useEffect(() => {
+
+  getSuggestedQuestions()
+
+},[])
+
+
+
+const handleEvaluateQuestion = async()=>{
+
+  const data = {
+    interviewId: interviewId,
+    questionDetails: [
+      {
+        question: currentQuestion?.question,
+        ideal_ans: currentQuestion?.ai_answer,
+        toughness: currentQuestion?.toughness,
+        relevancy: currentQuestion?.relevance,
+        category: currentQuestion?.category,
+        topic: currentQuestion?.topic,
+        feedback_ai: "Feedback is worst",
+        marks_given_by_interviewers: [
+          {
+            interviewerId: "0a33959f-c695-4a97-bf6e-f190c275990f",
+            score: Number(currentMarks),
+          },
+        ],
+      },
+    ],
+  };
+  try{
+
+    const response = await axios.post(`http://localhost:5454/api/v1/evaluation`,data,{withCredentials:true})
+    console.log("evaluated" ,response)
+
+
+
+
+
+  }
+  catch(error){
+    console.log(error)
+  }
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-  const handleAskQuestion = (question) => {
-
-    setCurrentQuestion(question)
-    setPerformanceMetrics(prev => ({
-      ...prev,
-      questionsAsked: prev.questionsAsked + 1,
-    }))
-    // Remove the asked question from suggested questions
-    setSuggestedQuestions(prev => prev.filter(q => q.id !== question.id))
-  }
-
-  const handleMarkQuestion = (marks) => {
-    setTotalMarks(totalMarks + marks)
-    setAnsweredQuestions([...answeredQuestions, { question: currentQuestion.question, marks }])
-    
-    setSuggestedQuestions(suggestedQuestions.filter((item,)=>item['id'] != currentQuestion.id))
-    setCurrentQuestion("")
-  }
-
-
-  const [performanceMetrics, setPerformanceMetrics] = useState({
-    questionsAsked: 0,
-    skippedQuestions: 0,
-    relevance: 0,
-    candidateAnxiousness: 0,
-    technicalKnowledge: 0,
-  })
 
 
 
 
 
   return (
-    <div className="h-screen bg-background p-4">
-      <div className="grid grid-cols-5 gap-4 h-full">
-       
 
-        
+    <div>
 
-        {
-          user.role=='INTERVIEWER' && 
-          <div className="flex flex-col h-[97vh] gap-4">
-          {/* Scrollable Questions Card */}
-          <Card className="flex-1 overflow-hidden ">
-            <CardHeader className="">
-              <CardTitle className="text-orange-500 text-lg">Suggested Questions</CardTitle>
-            </CardHeader>
-            <CardContent className="p-2 h-full">
-              <ScrollArea className="h-full overflow-y-auto p-1  ">
-                <div className="space-y-2">
-                  {currentQuestion && (
-                    <Card className="bg-orange-100 p-2">
-                      <p className="text-xs font-semibold">Current Question:</p>
-                      <p className="text-sm">{currentQuestion.question}</p>
-                    </Card>
-                  )}
-                  {suggestedQuestions?.map((q) => (
-                    <Card key={q.id} className="p-2">
-                      <p className="text-sm">{q.question}</p>
-                      <div className="flex justify-between items-center mt-1 gap-2 text-[10px] p-1">
-                        <Badge variant="outline" className="text-[10px] font-bold">{q.relevance}</Badge>
-                        <Badge variant="outline" className="text-[10px] font-bold">{q.topic}</Badge>
-                        <Badge variant={'outline'} className="text-[10px] font-bold">{q.toughness}/5</Badge>
-                      </div>
-                      <Button
-                        className="w-full mt-1 h-6 text-[10px] bg-gray-800 text-white"
-                        variant="outline"
-                        onClick={() => handleAskQuestion(q)}
-                      >
-                        Ask
-                      </Button>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        
-          {/* Performance Metrics Card */}
-          <Card className="">
-            <CardHeader className="p-2">
-              <CardTitle className="text-orange-500 text-lg">Performance Metrics</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span>Questions Asked:</span>
-                  <span className="font-semibold">{performanceMetrics.questionsAsked}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Skipped Questions:</span>
-                  <span className="font-semibold">{performanceMetrics.skippedQuestions}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Relevance:</span>
-                  <span className="font-semibold">{performanceMetrics.relevance}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Candidate Anxiousness:</span>
-                  <span className="font-semibold">{performanceMetrics.candidateAnxiousness}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Technical Knowledge:</span>
-                  <span className="font-semibold">{performanceMetrics.technicalKnowledge}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
+          <h1>{currentQuestion?.question}</h1>
 
-        }
-
-      
-
-
-        {/* <Conference  leaveChannel={leaveChannel}/> */}
-        <div className={`grid bg-blue-100 ${user.role=="CANDIDATE"?"col-span-4":"col-span-3"}`}></div>
-
-       
-      
-      
-
-                
-
-
-        <CandidateChats currentQuestion={currentQuestion} channel={`room1`} uid={uuid}/>
-
-
-        
-
-
-
-
-                
+          <input onChange={(e)=>setCurrentMarks(Number(e.target.value))}  min={0} max={10} type="number" className="boder-2 border " />
+          <button onClick={handleEvaluateQuestion}>Evaluate</button>
       </div>
-    </div>
+
   )
+
+
 }
+
+export default Check

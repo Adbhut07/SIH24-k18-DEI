@@ -8,9 +8,9 @@ const agoraRoom_controller_1 = require("../controllers/agoraRoom/agoraRoom.contr
 const tokenController_1 = require("../controllers/agoraRoom/tokenController");
 const router = express_1.default.Router();
 router.post('/rooms', agoraRoom_controller_1.createRoom);
-router.get('/getRoom/:appId', agoraRoom_controller_1.getRoom);
+router.get('/getRoom/:roomId', agoraRoom_controller_1.getRoom);
 router.get('/rooms', agoraRoom_controller_1.getRooms);
-router.put('/rooms/:appId', agoraRoom_controller_1.updateRoom);
-router.delete('/rooms/:appId', agoraRoom_controller_1.deleteRoom);
+router.put('/rooms/:roomId', agoraRoom_controller_1.updateRoom);
+router.delete('/rooms/:roomId', agoraRoom_controller_1.deleteRoom);
 router.post('/agoraToken', tokenController_1.generateToken);
 exports.default = router;

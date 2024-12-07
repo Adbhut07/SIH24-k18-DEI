@@ -34,6 +34,7 @@ const candidateProfileSchema = zod_1.z.object({
     education: zod_1.z.any().optional(),
     skills: zod_1.z.array(zod_1.z.string()).optional(),
     achievements: zod_1.z.array(zod_1.z.string()).optional(),
+    image: zod_1.z.string().optional(),
 });
 const createCandidateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -44,9 +45,10 @@ const createCandidateProfile = (req, res) => __awaiter(void 0, void 0, void 0, f
         if (!user) {
             return res.status(404).json({ success: false, message: 'Candidate not found' });
         }
-        if (user.role !== 'CANDIDATE') {
-            return res.status(400).json({ success: false, message: 'User is not a candidate' });
-        }
+        // interviewers can also create profile
+        // if (user.role !== 'CANDIDATE') {
+        //   return res.status(400).json({ success: false, message: 'User is not a candidate' });
+        // }
         const candidateProfile = yield prisma.candidateProfile.create({
             data: validatedData,
         });
@@ -103,17 +105,18 @@ const updateCandidateProfileSchema = zod_1.z.object({
     education: zod_1.z.any().optional(),
     skills: zod_1.z.array(zod_1.z.string()).optional(),
     achievements: zod_1.z.array(zod_1.z.string()).optional(),
+    image: zod_1.z.string().optional(),
 });
 const updateCandidateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const updateData = updateCandidateProfileSchema.parse(req.body);
-        const existingProfile = yield prisma.candidateProfile.findUnique({ where: { id } });
+        const existingProfile = yield prisma.candidateProfile.findUnique({ where: { candidateId: id } });
         if (!existingProfile) {
             return res.status(404).json({ success: false, message: 'Candidate profile not found' });
         }
         const updatedProfile = yield prisma.candidateProfile.update({
-            where: { id },
+            where: { candidateId: id },
             data: updateData,
         });
         return res.status(200).json({ success: true, data: updatedProfile });

@@ -43,7 +43,6 @@ export default function ProfileCard({
         <div className="flex items-center justify-between">
           <Avatar className="h-12 w-12">
             <AvatarImage src={profilePicture} alt={name} />
-            <AvatarFallback>{(name || 'Dango')?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           <Badge variant="outline" className={`${getStatusColor(status)} text-white`}>
             {status}

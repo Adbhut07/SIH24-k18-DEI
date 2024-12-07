@@ -1,5 +1,5 @@
 import express from 'express';
-import { getInterviewsByInterviewerId } from '../controllers/interviewer/inerviewer.controller';
+import { getInterviewsByInterviewerId } from '../controllers/interviewer/interviewer.controller';
 import { authorize, protect } from '../utils/auth.middleware';
 
 const router = express.Router();

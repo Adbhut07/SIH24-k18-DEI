@@ -66,10 +66,10 @@ const getRooms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getRooms = getRooms;
 const getRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { appId } = req.params;
+    const { roomId } = req.params;
     try {
         const room = yield prisma.room.findUnique({
-            where: { appId },
+            where: { id: roomId },
         });
         if (!room) {
             return res.status(404).json({ message: "Room not found" });
@@ -87,11 +87,11 @@ const getRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getRoom = getRoom;
 const updateRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { appId } = req.params;
+    const { roomId } = req.params;
     try {
         const validatedData = updateRoomSchema.parse(req.body);
         const updatedRoom = yield prisma.room.update({
-            where: { appId },
+            where: { id: roomId },
             data: validatedData,
         });
         res.status(200).json({
@@ -107,10 +107,10 @@ const updateRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.updateRoom = updateRoom;
 const deleteRoom = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { appId } = req.params;
+    const { roomId } = req.params;
     try {
         yield prisma.room.delete({
-            where: { appId },
+            where: { id: roomId },
         });
         res.status(200).json({
             success: true,

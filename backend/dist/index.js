@@ -16,6 +16,8 @@ const interview_route_1 = __importDefault(require("./routes/interview.route"));
 const candidate_route_1 = __importDefault(require("./routes/candidate.route"));
 const userProfile_route_1 = __importDefault(require("./routes/userProfile.route"));
 const agoraRoom_route_1 = __importDefault(require("./routes/agoraRoom.route"));
+const evaluation_route_1 = __importDefault(require("./routes/evaluation.route"));
+const interviewer_route_1 = __importDefault(require("./routes/interviewer.route"));
 const socket_1 = __importDefault(require("./socket/socket"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
@@ -35,6 +37,8 @@ app.use('/api/v1/interview', interview_route_1.default);
 app.use('/api/v1/candidate', candidate_route_1.default);
 app.use('/api/v1/userProfile', userProfile_route_1.default);
 app.use('/api/v1/agoraRoom', agoraRoom_route_1.default);
+app.use('/api/v1/evaluation', evaluation_route_1.default);
+app.use('/api/v1/interviewer', interviewer_route_1.default);
 app.get('/', (req, res) => {
     res.send('Hello, world!');
 });

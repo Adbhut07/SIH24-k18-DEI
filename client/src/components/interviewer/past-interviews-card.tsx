@@ -49,7 +49,7 @@ const candidateSuccessRates = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28']
 
-export function PastInterviewsCard() {
+export function PastInterviewsCard({interviews}) {
   const [activeTab, setActiveTab] = useState("list")
 
   return (
@@ -69,22 +69,31 @@ export function PastInterviewsCard() {
                 <TableRow>
                   <TableHead>Title</TableHead>
                   <TableHead>Candidate</TableHead>
-                  <TableHead>Result</TableHead>
-                  <TableHead>Feedback</TableHead>
+                  <TableHead>Candidate Email</TableHead>
+                  <TableHead>Interviewers</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pastInterviews.map((interview) => (
+                {interviews.map((interview) => (
+                  interview.status == 'COMPLETED' &&
                   <TableRow key={interview.id}>
-                    <TableCell>{interview.title}</TableCell>
-                    <TableCell>{interview.candidateName}</TableCell>
-                    <TableCell>{interview.result}</TableCell>
-                    <TableCell>{interview.feedback}</TableCell>
+                    <TableCell className="font-bold">{interview.title}</TableCell>
+                    <TableCell>{interview.candidate.name}</TableCell>
+                    <TableCell>{interview.candidate.email}</TableCell>
                     <TableCell>
+                    {
+                      interview.interviewers.map((interviewer) => (
+                            <span key={interviewer.id} className="">{interviewer.interviewer.name}  </span>
+
+                      ))
+                    }
+                    </TableCell>
+                    <TableCell className="flex gap-2 items-center">
+                    <Download className="h-4 w-4 " />
+                    
                       <Button variant="ghost" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Report
+                      Download Report
                       </Button>
                     </TableCell>
                   </TableRow>

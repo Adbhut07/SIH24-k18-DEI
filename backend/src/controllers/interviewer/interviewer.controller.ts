@@ -18,9 +18,14 @@ export const getInterviewsByInterviewerId = async (req: Request, res: Response):
       include: {
         interviewers: {
           include: {
-            interviewer: true 
+            interviewer: true // Include interviewer details
           }
         },
+        candidate: {
+          include: {
+            candidateProfile: true // Include candidate profile details
+          }
+        }
       }
     });
 

@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input'
 import { setUser } from '@/lib/store/features/user/userSlice'
 import { useAppDispatch } from '@/lib/store/hooks';
 import Cookies from 'js-cookie';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -87,6 +88,7 @@ export default function SignIn() {
             email: user.email || null,
             role: user.role || null,
             isAuthenticated: true,
+            image:null
           })
         );
         
@@ -103,7 +105,7 @@ export default function SignIn() {
           else{
             router.push('/dashboard-interviewer');
           }
-        }, 100);
+        }, 10);
       } else {
         throw new Error(responseData.message || 'Failed to sign in');
       }
@@ -161,7 +163,12 @@ export default function SignIn() {
                 <p className="text-red-500 text-sm">{errorMessage}</p>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? 
+                <>
+                <Loader2 className='animate-spin'/>
+                Signing In...
+                </>
+                 : 'Sign In'}
               </Button>
             </form>
           </Form>

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkInterviewUpdatePermissions = exports.getAllInterviews = exports.updateInterviewStatus = exports.updateInterviewSession = exports.createInterviewSession = void 0;
+exports.checkInterviewUpdatePermissions = exports.getInterviewById = exports.getAllInterviews = exports.updateInterviewStatus = exports.updateInterviewSession = exports.createInterviewSession = void 0;
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 const prisma = new client_1.PrismaClient();
@@ -232,6 +232,42 @@ const getAllInterviews = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getAllInterviews = getAllInterviews;
+const getInterviewById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const interview = yield prisma.interview.findUnique({
+            where: { id },
+            include: {
+                candidate: true,
+                interviewers: {
+                    include: {
+                        interviewer: true,
+                    },
+                },
+            },
+        });
+        if (!interview) {
+            return res.status(404).json({
+                success: false,
+                message: "Interview not found",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Fetched interview successfully.",
+            data: interview,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching interview:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch interview.",
+            error: error.message || "An unexpected error occurred",
+        });
+    }
+});
+exports.getInterviewById = getInterviewById;
 // export const findInterviewByRoomId = async (roomId: string) => {
 //   return await prisma.interview.findUnique({
 //     where: { roomId },

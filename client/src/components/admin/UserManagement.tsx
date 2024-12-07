@@ -68,7 +68,7 @@ export function UserManagement() {
       
 
       // console.log(data)
-      toast.success('Users fetched')
+      
     } catch (err) {
       setError("Failed to fetch users.");
       setIsLoading(false);

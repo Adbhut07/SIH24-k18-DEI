@@ -11,6 +11,7 @@ import { io, Socket } from "socket.io-client"
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { useParams } from 'next/navigation'
 import axios from 'axios'
+import AgoraRTC from 'agora-rtc-react'
 
 interface Message {
     id: string
@@ -18,7 +19,13 @@ interface Message {
     message: string
 }
 
-export default function ChatCard({ channel, uid, currentQuestion }) {
+interface ChatCardProps {
+    channel: string;
+    uid: string;
+    currentQuestion: { question: string } | null;
+}
+
+export default function ChatCard({ channel, uid, currentQuestion }: ChatCardProps) {
 
     const [socket, setSocket] = useState<Socket | null>(null)
     const [roomId, setRoomId] = useState(channel)
@@ -32,9 +39,6 @@ export default function ChatCard({ channel, uid, currentQuestion }) {
 
     const[panelMembers,setPanelMembers] = useState([])
     const {roomIdAgora,interviewId} = useParams()
-
-    
-
 
    
 
@@ -295,7 +299,7 @@ useEffect(()=>{
                             className="flex-grow text-sm"
                         />
                         <Button type="submit" size="icon" className="shrink-0">
-                            <Send className="h-4 w-4" />
+                            <Send className="h-2 w-2" />
                             <span className="sr-only">Send message</span>
                         </Button>
                     </form>

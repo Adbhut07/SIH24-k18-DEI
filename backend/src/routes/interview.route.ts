@@ -8,7 +8,7 @@ router.post("/create", protect, authorize(['ADMIN']), createInterviewSession);
 router.patch("/interview-update/:id", protect, authorize(['ADMIN']), updateInterviewSession);
 router.put("/status/:id", updateInterviewStatus);
 router.get("/interviews",protect,authorize(['ADMIN']),getAllInterviews)
-router.get("/interviews",protect, getInterviewById)
+router.get("/interviews/:id", getInterviewById)
 
 
 

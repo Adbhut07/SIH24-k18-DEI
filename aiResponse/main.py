@@ -52,6 +52,7 @@ Evaluation Criteria:
 2. Role Relevance: Evaluate how well the answer matches the specific job role
 3. Communication Skills: Consider clarity, structure, and articulation
 
+
 Please provide a detailed evaluation with:
 - Marks (out of 10): Rate technical accuracy and quality
 - Relevancy Score (out of 10): Alignment with job role

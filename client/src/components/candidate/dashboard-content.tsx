@@ -135,20 +135,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, BookOpenIcon, TrendingUpIcon, BriefcaseIcon, BellIcon, BookmarkIcon, TargetIcon, VideoIcon, Search, Clock, Video, Calendar } from 'lucide-react'
+import { CalendarIcon, BookOpenIcon, TrendingUpIcon, BriefcaseIcon, BellIcon, BookmarkIcon, TargetIcon, VideoIcon, Search, Clock, Video, Calendar, CheckCircle, FileText, AlertCircle } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAppSelector } from "@/lib/store/hooks"
 import axios from "axios"
 import Link from "next/link"
-// import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "@/components/ui/chart"
+import { ScrollArea } from "@radix-ui/react-scroll-area"
+import {AnimatePresence, motion} from 'motion/react'
+import { format } from "path"
 
 export default function DashboardContent() {
   
   const user = useAppSelector((state)=>state.user)
 
 
-  const [upcomingInterviews,setUpcomingInterviews] = useState([])
+  const [candidateInterviews,setCandidateInterviews] = useState([])
 
   const fetchUpcomingInterviews = async()=>{
     try{
@@ -156,7 +158,7 @@ export default function DashboardContent() {
         withCredentials:true
       })
       const interviews = response?.data?.interviews
-      setUpcomingInterviews(interviews)
+      setCandidateInterviews(interviews)
    
     
     }
@@ -177,10 +179,10 @@ export default function DashboardContent() {
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="col-span-full">
-          <UpcomingInterviews upcomingInterviews={upcomingInterviews}/>
+          <UpcomingInterviews candidateInterviews={candidateInterviews}/>
         </div>
         <InterviewTips />
-        <CompletedInterviews />
+        <CompletedInterviews candidateInterviews={candidateInterviews} />
         <SkillAssessment />
         <Announcements />
         <Resources />
@@ -191,108 +193,129 @@ export default function DashboardContent() {
   )
 }
 
-function UpcomingInterviews({upcomingInterviews}) {
+export function UpcomingInterviews({ candidateInterviews }) {
   const [searchTerm, setSearchTerm] = useState("")
-  
 
-  const filteredInterviews = upcomingInterviews.filter(interview =>
+  const filteredInterviews = candidateInterviews.filter(interview =>
     Object.values(interview).some(value =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   )
 
-  
-    const getStatusColor = (status) => {
-      switch (status) {
-        case 'COMPLETED':
-          return 'bg-green-500 text-white hover:bg-green-500 hover:text-white'
-        case 'IN_PROGRESS':
-          return 'bg-blue-500 text-white hover:bg-blue-500 hover:text-white'
-        case 'SCHEDULED':
-          return 'bg-blue-500 text-white hover:bg-blue-500 hover:text-white'
-        default:
-          return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-      }
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'bg-green-500 text-white'
+      case 'IN_PROGRESS':
+        return 'bg-blue-500 text-white'
+      case 'SCHEDULED':
+        return 'bg-blue-500 text-white'
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
     }
+  }
 
-
-
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'COMPLETED':
+        return <FileText className="h-4 w-4" />
+      case 'IN_PROGRESS':
+        return <Video className="h-4 w-4" />
+      case 'SCHEDULED':
+        return <Calendar className="h-4 w-4" />
+      default:
+        return <AlertCircle className="h-4 w-4" />
+    }
+  }
 
   return (
-    <Card className="col-span-full">
-      <CardHeader>
-        <CardTitle>Upcoming Interviews</CardTitle>
-        <CardDescription>Your scheduled interviews for the next 30 days</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4 relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search interviews..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="rounded-md border p-2">
-        <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[250px]">Title</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Time</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Action</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredInterviews.map((interview) => (
-
-
-           !(interview.status=='COMPLETED') &&
-          
-          <TableRow key={interview.id}>
-            <TableCell>
-              <span className="font-semibold text-primary">{interview.title}</span>
-            </TableCell>
-            <TableCell>{interview.description}</TableCell>
-            <TableCell>
-              <div className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                {new Date(interview.scheduledAt).toLocaleDateString()}
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center">
-                <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                {new Date(interview.scheduledAt).toLocaleTimeString()}
-              </div>
-            </TableCell>
-            <TableCell>
-              <Badge className={`${getStatusColor(interview.status)}`}>
-                {interview.status}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-right">
-             
-              <Link href={`/interview2/${interview.roomId}/${interview.id}`}>
-              <Button size="sm" variant="outline">
-                <Video className="mr-2 h-4 w-4" />
-                Join Now
-              </Button>
-
-              </Link>
-
-            </TableCell>
-          </TableRow>
-
-        ))}
-      </TableBody>
-    </Table>
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Upcoming Interviews</CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            Your scheduled interviews for the next 30 days
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <motion.div
+            className="mb-4 relative"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search interviews..."
+              className="pl-8 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </motion.div>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[250px] text-xs font-medium">Title</TableHead>
+                  <TableHead className="text-xs font-medium">Description</TableHead>
+                  <TableHead className="text-xs font-medium">Date</TableHead>
+                  <TableHead className="text-xs font-medium">Time</TableHead>
+                  <TableHead className="text-xs font-medium">Status</TableHead>
+                  <TableHead className="text-right text-xs font-medium">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredInterviews.map((interview, index) => (
+                  interview.status !== 'COMPLETED' && (
+                    <motion.tr
+                      key={interview.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <TableCell>
+                        <span className="font-semibold text-primary text-sm">{interview.title}</span>
+                      </TableCell>
+                      <TableCell className="text-sm">{interview.description}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-sm">
+                          <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                          {new Date(interview.scheduledAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-sm">
+                          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                          {new Date(interview.scheduledAt).toLocaleTimeString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusColor(interview.status)} text-xs`}>
+                          {getStatusIcon(interview.status)}
+                          <span className="ml-1">{interview.status}</span>
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/interview2/${interview.roomId}/${interview.id}`}>
+                          <Button size="sm" variant="outline" className="text-xs">
+                            <Video className="mr-2 h-3 w-3" />
+                            Join Now
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </motion.tr>
+                  )
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }
 
@@ -386,35 +409,85 @@ function InterviewTips() {
   )
 }
 
-function CompletedInterviews() {
-  const interviews = [
-    { title: "Frontend Developer", company: "Web Solutions", status: "Pending", date: "2023-06-01" },
-    { title: "UX Designer", company: "Creative Agency", status: "Accepted", date: "2023-05-28" },
-    { title: "Data Analyst", company: "Data Corp", status: "Rejected", date: "2023-05-25" },
-  ]
+function CompletedInterviews({candidateInterviews}) {
+
+
+
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const completedInterviews = candidateInterviews.filter(
+    (interview) => interview.status === 'COMPLETED'
+  )
+
+
+  
 
   return (
-    <Card>
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Recent Completed Interviews</CardTitle>
+        <CardTitle className="text-xl font-semibold flex items-center">
+          <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+          Recent Completed Interviews
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-4">
-          {interviews.map((interview, index) => (
-            <li key={index} className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{interview.title}</p>
-                <p className="text-sm text-muted-foreground">{interview.company}</p>
-                <p className="text-sm">{interview.date}</p>
-              </div>
-              <Badge variant={interview.status === "Accepted" ? "success" : interview.status === "Rejected" ? "destructive" : "default"}>
-                {interview.status}
-              </Badge>
-            </li>
-          ))}
-        </ul>
+        <ScrollArea className="h-[300px] pr-4 overflow-y-auto">
+          <ul className="space-y-1">
+            <AnimatePresence>
+              {completedInterviews.map((interview) => (
+                <motion.li
+                  key={interview.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative"
+                  onMouseEnter={() => setHoveredId(interview.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
+                  <motion.div
+                    className="bg-card p-4 rounded-lg shadow-sm"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1 flex-grow pr-4">
+                        <p className="font-medium text-sm">{interview.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {interview.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(interview.scheduledAt), "MMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
+                      <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-100 text-green-800">
+                        Completed
+                      </Badge>
+                    </div>
+                    <AnimatePresence>
+                      {hoveredId === interview.id && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute inset-0 bg-primary/5 rounded-lg flex items-center justify-center"
+                        >
+                          <button className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-xs font-medium">
+                            View Details
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
+        </ScrollArea>
       </CardContent>
     </Card>
+
   )
 }
 

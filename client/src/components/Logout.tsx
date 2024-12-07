@@ -17,9 +17,11 @@ const Logout = ()=>{
 
 
     const handleLogout = ()=>{
-        dispatch(clearUser())
         Cookies.remove('jwt');
         router.push('/')
+        dispatch(clearUser())
+       
+        
     }
 
 

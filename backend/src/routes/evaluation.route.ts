@@ -10,10 +10,10 @@ import { authorize, protect } from "../utils/auth.middleware";
 
 const router = express.Router();
 
-router.post("/", protect, authorize(["ADMIN"]), createEvaluation);
-router.get("/", protect, authorize(["ADMIN"]), getEvaluations);
-router.get("/:id", protect, authorize(["ADMIN"]), getEvaluationsByInterviewId);
-router.put("/:id", protect, authorize(["ADMIN"]), updateEvaluation);
-router.delete("/:id", protect, authorize(["ADMIN"]), deleteEvaluation);
+router.post("/", protect, authorize(["ADMIN", "INTERVIEWER"]), createEvaluation);
+router.get("/", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluations);
+router.get("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluationsByInterviewId);
+router.put("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), updateEvaluation);
+router.delete("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), deleteEvaluation);
 
 export default router;

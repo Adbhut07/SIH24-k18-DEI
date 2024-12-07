@@ -156,11 +156,11 @@ export function InterviewList() {
       })
       setAllInterviews(response?.data?.data)
       setFilteredInterviews(response?.data?.data)
-      toast.success('Interviews fetched')
+      
     }
     catch (error) {
       console.log(error)
-      toast.error('Interviews not found')
+
     }
   }
 
@@ -224,7 +224,7 @@ export function InterviewList() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
+                    Interviews are loading...
                   </TableCell>
                 </TableRow>
               )}

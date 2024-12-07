@@ -13,10 +13,13 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { useAppSelector } from '@/lib/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import axios from 'axios'
 import { eventNames } from 'process'
 import { parseUrl } from 'next/dist/shared/lib/router/utils/parse-url'
+import { supabase } from '@/lib/supabase'
+import { updateUserImage } from '@/lib/store/features/user/userSlice'
+import { Loader2 } from 'lucide-react'
 
 type UserData = {
   firstName: string
@@ -39,6 +42,10 @@ export function MainContent() {
 
 
   const user = useAppSelector((state) => state.user)
+  console.log(user)
+
+  const [profileImage, setProfileImage] = useState(user.image)
+  const dispatch = useAppDispatch();
 
   const [userData, setUserData] = useState(
     {
@@ -118,10 +125,10 @@ export function MainContent() {
         setIsLoading(false);
         console.log(data?.data?.data?.id)
         setProfileId(data?.data?.data?.id)
-        toast.success('User details fetched');
+       
       } catch (error) {
         setIsLoading(false);
-        toast.error('Failed to fetch user details');
+
       }
     };
 
@@ -130,7 +137,11 @@ export function MainContent() {
   }, [])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className='flex h-full gap-2 items-center justify-center'>
+
+     <span>{`Loading  `}</span> 
+     <Loader2 height={20} width={20} className='animate-spin' />
+      </div>
   }
 
   if (!userData) {
@@ -193,60 +204,6 @@ export function MainContent() {
     }
   };
 
-  // const uploadMedicalReport = async(file:File)=>{
-  //   const sanitizeFileName = (name: string) => {
-  //     return name.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9.\-_]/g, "");
-  //   };
-
-  //   try {
-  //     const sanitizedFileName = sanitizeFileName(file.name);
-  //     const fileType = file.type;
-
-  //     const response = await fetch("/api/upload", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ fileName: sanitizedFileName, fileType }),
-  //     });
-
-  //     const { uploadUrl, key } = await response.json();
-
-  //     // Upload file to S3
-  //     const uploadResponse = await fetch(uploadUrl, {
-  //       method: "PUT",
-  //       body: file,
-  //       headers: {
-  //         "Content-Type": fileType,
-  //       },
-  //     });
-
-  //     if (!uploadResponse.ok) {
-  //       throw new Error("Upload failed");
-  //     }
-
-  //     const signedUrlResponse = await fetch("/api/getPresignedUrl", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ key }),
-  //     });
-
-  //     const { signedUrl } = await signedUrlResponse.json();
-
-
-  //     console.log("Public URL:", signedUrl);  
-  //     toast.success('Resume Uploaded')
-
-  //     return signedUrl
-
-
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error('Resume Not Uploaded')
-  //   }
-  // };
 
 
 
@@ -296,7 +253,7 @@ export function MainContent() {
 
     try {
       // Send the PUT request to update the profile
-      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${profileId}`, formData);
+      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData);
 
       // Handle successful response
       if (response.status === 200) {
@@ -310,9 +267,9 @@ export function MainContent() {
       console.error("Error updating user profile:", error);
       toast.error('Details not updated');
     }
-  };
+  }
 
-  const handleMedicalReport = async (event) => {
+ const handleMedicalReport  = async(event)=>{
     event.preventDefault();
 
 
@@ -345,7 +302,7 @@ export function MainContent() {
 
       try {
         // Send the PUT request to update the profile
-        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${profileId}`, formData);
+        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData);
 
         // Handle successful response
         if (response.status === 200) {
@@ -378,7 +335,7 @@ export function MainContent() {
 
       try {
 
-        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${profileId}`, formData)
+        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData)
         toast.success('Skill added')
 
         setNewSkill("")
@@ -454,6 +411,53 @@ export function MainContent() {
 
 
 
+  const handleProfileImage = async (e)=>{
+    e.preventDefault();
+
+    let file = e.target.profileImage.files[0];
+    if (!file) {
+      toast.error('Please select a file to upload');
+      return;
+    }
+
+
+    const fileName = `${Date.now()}-${file.name}`;
+
+    try {
+      // Upload the file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('sih-profile') // Replace with your storage bucket name
+        .upload(`${user.id}/${fileName}`, file);
+
+      if (error) throw error;
+
+      // Get the public URL of the uploaded file
+      const fileUrl = supabase.storage.from(`sih-profile/${user.id}`).getPublicUrl(fileName)
+      setProfileImage(fileUrl?.data?.publicUrl);
+      dispatch(updateUserImage({image:profileImage}))
+
+      // saving to database
+      const formData = {
+        image:profileImage
+      }
+
+      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`,formData)
+      console.log(response)
+
+      alert('File uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file.');
+    } 
+  };
+
+
+
+
+
+
+  
+
 
 
 
@@ -502,9 +506,9 @@ export function MainContent() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback>CN</AvatarFallback>
+                <Avatar >
+                  <AvatarImage src={profileImage} alt={user.name} />
+                  <AvatarFallback>{user.name}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h2 className="text-2xl font-bold">{userData.name}</h2>
@@ -637,7 +641,7 @@ export function MainContent() {
             <CardTitle>Medical Report</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleMedicalReport}>
+            <form  onSubmit={handleMedicalReport}>
               <div className="space-y-2">
                 <Label htmlFor="medicalReport">Upload Medical Report</Label>
                 {medicalFile && <span className='p-2 text-sm text-blue-800'>{medicalFile}</span>}
@@ -647,6 +651,24 @@ export function MainContent() {
             </form>
           </CardContent>
         </Card>
+
+        <Card id="profile-photo">
+          <CardHeader>
+            <CardTitle>Profile Report</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleProfileImage}>
+              <div className="space-y-2">
+                <Label htmlFor="profileImage">Upload Profile Image</Label>
+                {profileImage && <span className='p-2 text-sm text-blue-800'>{profileImage.substring(profileImage.length-20,profileImage.length)}</span>}
+                <Input id="profileImage" type="file" accept=".jpg, .png, .jpeg" />
+              </div>
+              <Button type='submit' className="mt-4" >Save Profile Image</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+
 
 
 
