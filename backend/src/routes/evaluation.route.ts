@@ -5,6 +5,7 @@ import {
   updateEvaluation,
   deleteEvaluation,
   getEvaluationsByInterviewId,
+  addQuestionDetails,
 } from "../controllers/evaluation/evaluation.controller";
 import { authorize, protect } from "../utils/auth.middleware";
 
@@ -15,5 +16,7 @@ router.get("/", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluations);
 router.get("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluationsByInterviewId);
 router.put("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), updateEvaluation);
 router.delete("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), deleteEvaluation);
+router.put("/:interviewId/question-details", addQuestionDetails);
+
 
 export default router;
