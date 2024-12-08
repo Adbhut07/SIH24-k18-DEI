@@ -112,7 +112,7 @@ model Room {
 
 model Evaluation {
   id                  String    @id @default(uuid()) @db.Uuid
-  interviewId         String    @db.Uuid
+  interviewId         String    @db.Uuid @unique
   interview           Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   
   questionDetails     Json      // Array of JSON objects containing question details and marks
