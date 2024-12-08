@@ -16,7 +16,7 @@ router.get("/", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluations);
 router.get("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), getEvaluationsByInterviewId);
 router.put("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), updateEvaluation);
 router.delete("/:id", protect, authorize(["ADMIN","INTERVIEWER"]), deleteEvaluation);
-router.put("/:interviewId/question-details", addQuestionDetails);
+router.put("/:interviewId/question-details", protect, authorize(["ADMIN","INTERVIEWER"]), addQuestionDetails);
 
 
 export default router;
