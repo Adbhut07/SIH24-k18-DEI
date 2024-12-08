@@ -9,6 +9,7 @@ import AgoraRTC, { AgoraRTCProvider, useRTCClient } from "agora-rtc-react";
 import Client from "@/components/Client";
 import { useRouter } from "next/router";
 
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",

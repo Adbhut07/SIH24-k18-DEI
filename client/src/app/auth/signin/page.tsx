@@ -162,7 +162,7 @@ export default function SignIn() {
               {errorMessage && (
                 <p className="text-red-500 text-sm">{errorMessage}</p>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gray-800" disabled={isLoading}>
                 {isLoading ? 
                 <>
                 <Loader2 className='animate-spin'/>
