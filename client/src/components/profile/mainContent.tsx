@@ -19,7 +19,7 @@ import { eventNames } from 'process'
 import { parseUrl } from 'next/dist/shared/lib/router/utils/parse-url'
 import { supabase } from '@/lib/supabase'
 import { updateUserImage } from '@/lib/store/features/user/userSlice'
-import { Loader2 } from 'lucide-react'
+import { Asterisk, Loader, Loader2 } from 'lucide-react'
 
 type UserData = {
   firstName: string
@@ -44,7 +44,8 @@ export function MainContent() {
   const user = useAppSelector((state) => state.user)
   console.log(user)
 
-  const [profileImage, setProfileImage] = useState(user.image)
+  const [profileImage, setProfileImage] = useState('')
+  const [currentProfileImage,setCurrentProfileImage] = useState('')
   const dispatch = useAppDispatch();
 
   const [userData, setUserData] = useState(
@@ -77,6 +78,7 @@ export function MainContent() {
   const [profileId, setProfileId] = useState("")
   const [resumeFile, setResumeFile] = useState("")
   const [medicalFile, setMedicalFile] = useState("")
+  const [isExtracting, setIsExtracting] = useState(false)
 
 
   const fetchProfileDetails = async () => {
@@ -120,7 +122,7 @@ export function MainContent() {
 
 
 
-
+        setCurrentProfileImage(data?.data?.data?.image)
         setUserData(data?.data?.data);
         setIsLoading(false);
         console.log(data?.data?.data?.id)
@@ -206,8 +208,43 @@ export function MainContent() {
 
 
 
+  const extractSkills = async(file)=>{
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try{
+      const response = await axios.post("http://localhost:8000/upload-resume", formData);
+      const skills = (String(response?.data)).split(",");
+      return skills;
+
+    }
+    catch(error){
+      console.log(error)
+    }
+
+  
+  }
 
 
+  const handleExtractedSkills = async(skills)=>{
+    let formData = {
+      skills: skills
+    }
+
+    try{
+      console.log(formData)
+
+
+        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData)
+        toast.success('Skills added')
+
+    }
+    catch(error){
+      console.log(error)
+    } 
+
+  }
 
 
 
@@ -238,7 +275,18 @@ export function MainContent() {
       try {
         // Assuming uploadResume is an async function
         public_url = await uploadFile(file);
-        toast.success('Reusme uploaded')
+        toast.success('Resume uploaded')
+
+        setIsExtracting(true);
+        // Extracting skills from resume
+        const skills = await extractSkills(file)
+
+        handleExtractedSkills(skills);
+        setIsExtracting(false);
+
+
+
+
       } catch (error) {
         console.error("Error uploading resume:", error);
         toast.error('Failed to upload resume');
@@ -435,21 +483,29 @@ export function MainContent() {
       const fileUrl = supabase.storage.from(`sih-profile/${user.id}`).getPublicUrl(fileName)
       setProfileImage(fileUrl?.data?.publicUrl);
       dispatch(updateUserImage({image:profileImage}))
+      console.log(fileUrl?.data?.publicUrl)
 
-      // saving to database
-      const formData = {
-        image:profileImage
-      }
+      
+        // saving to database
+        const formData = {
+         image:fileUrl?.data?.publicUrl
+       }
+   
+       const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`,formData)
+       console.log(response)
+   
+       alert('File uploaded successfully!');
+     
 
-      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`,formData)
-      console.log(response)
+     
 
-      alert('File uploaded successfully!');
     } catch (error) {
-      console.error('Error uploading file:', error);
-      alert('Error uploading file.');
-    } 
+      console.error('Error uploading file:', error.message);
+      toast.error('Failed to upload file');
+    }
   };
+
+
 
 
 
@@ -507,7 +563,7 @@ export function MainContent() {
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar >
-                  <AvatarImage src={profileImage} alt={user.name} />
+                  <AvatarImage src={currentProfileImage} alt={user.name} />
                   <AvatarFallback>{user.name}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -622,9 +678,12 @@ export function MainContent() {
               </div>
 
 
-              <div className="space-y-2">
-                <Label htmlFor="resume">Resume</Label>
-                {resumeFile && <span className='p-2 text-sm text-blue-800'>{resumeFile}</span>}
+              <div className="space-y-4 mt-4">
+                <div className='flex flex-col gap-2'>
+                <Label htmlFor="resume">Upload resume to auto-fill your profile with skills..</Label>
+                {resumeFile && <span className=' text-sm text-blue-800'>{resumeFile}</span>}
+                {isExtracting && <div className=' flex gap-2'> <span>Extracting your skills</span> <Loader2 className='animate-spin'/></div>}
+                </div>
                 <Input id="resume" type="file" accept=".pdf" />
               </div>
               <Button className='bg-gray-800 text-white' type="submit">Save Changes</Button>

@@ -121,6 +121,19 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
     }
   }
 
+
+  useEffect(()=>{
+    if(token){
+      onJoin(channel,token,appid,Number(UID))
+    }
+  },[token])
+
+  const handleJoin = async () =>{
+ 
+    await handleGenerateToken()
+  }
+
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-4">
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -179,23 +192,23 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
               <div className="grid gap-2">
 
                 <div>
-                  <Label className='flex items-center mb-1 '> <User className='mr-2 h-4 w-4' />UID</Label>
+                  <Label className='flex items-center mb-1 '> <User className='mr-2 h-4 w-4' />User ID</Label>
                   
                   <Input id="UID"  value={UID} onChange={(e)=>{setUID(e.target.value)}} />
                   </div>
                 
 
-                <Input id="token" onChange={(e)=>setToken(e.target.value)} value={token} placeholder='Token will be pasted here' />
+                {/* <Input id="token" onChange={(e)=>setToken(e.target.value)} value={token} placeholder='Token will be pasted here' />
 
-                <Button onClick={handleGenerateToken}>Generate Token</Button>
+                <Button onClick={handleGenerateToken}>Generate Token</Button> */}
 
 
               </div>
               {isError && <span className="text-center text-destructive">Invalid room or token</span>}
               <Button
                 className="w-full"
-                disabled={isDisabled || isError}
-                onClick={() => onJoin(channel,token,appid,UID)}
+                disabled={isError}
+                onClick={handleJoin}
               >
                 <LogIn className="mr-2 h-4 w-4" />
                 Join Room

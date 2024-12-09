@@ -23,8 +23,21 @@ import axios from "axios"
 import { Input } from "@/components/ui/input"
 import { set } from "date-fns"
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatedSkills } from "./animated-skills"
+import useWebSocket from "@/hooks/useWebSocket"
 
 export default function FullBoardRoom({channel,uid,leaveChannel}) {
+  
+  //connection to python server  for AI
+  const { initializeWebSocket, getEvaluatedDataFromAI, isConnected, connectionError } = useWebSocket();
+
+  useEffect(() => {
+    initializeWebSocket();
+  }, [initializeWebSocket]);
+
+
+  
 
   const user = useAppSelector((state)=>state.user)
 
@@ -40,6 +53,9 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
   const [isSubmittingMarks, setIsSubmittingMarks] = useState(false)
   const [isSubmittingEvaluation, setIsSubmittingEvaluation] = useState(false)
   const [currentCandidateAnswer,setCurrentCandidateAnswer] = useState('')
+
+  const [candidateEmail,setCandidateEmail] = useState('')
+  const [candidateSkills,setCandidateSkills] = useState([])
 
 
 
@@ -58,8 +74,44 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
 
 
 
+const fetchCandidateSkills = async ()=>{
+
+  try{
+    const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${candidateEmail}`,)
+    console.log(response?.data?.data?.skills)
+
+    setCandidateSkills(response?.data?.data?.skills)
+
+  }
+  catch(error){
+    console.log(error)
+  }
+}
+
+
+
+ const fetchInterviewDetails = async () => {
+
+  try {
+    const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`);
+    setCandidateEmail(response?.data?.data?.candidate?.email)
+    console.log(response?.data?.data?.candidate?.email)
+    
+  } catch (error) {
+    console.log(error)
+    
+  }
+
+
+ }
+
+
+
+
+
+
   // Candidate skills (replace with actual skills)
-  const candidateSkills = "JavaScript, React, Node.js, SQL, Data Structures";
+  // const candidateSkills = "JavaScript, React, Node.js, SQL, Data Structures";
 
 
   const openai = new OpenAI({
@@ -68,47 +120,56 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
     dangerouslyAllowBrowser: true
   })
 
-  const prompt = `Generate 10 interview questions related to these skills: ${candidateSkills}.
+  
+  async function getSuggestedQuestions() {
 
-Return the result as a **valid JSON array** where each element is a JSON object. Ensure the JSON is properly formatted with no syntax errors. Each object should have the following fields:
+    const skills = candidateSkills.join(', ');
 
--- **"id**: A unique identifier for the question.
+    const prompt = `
+Generate 15 interview questions related to these skills: ${skills}. 
+Return the result as a **valid JSON array** where each element is a JSON object. 
+Also ensure the proper formatting, proper terminated strings as keys, and that all strings are correctly escaped. 
+Ensure the JSON is properly formatted with no syntax errors. 
+Each object should have the following fields:
+- **"id"**: A unique identifier for the question.
 - **"question"**: A string representing the interview question.
 - **"topic"**: A string indicating the specific topic related to the skills.
 - **"relevance"**: A string indicating the relevance of the question to the skills (must be one of: "high", "medium", "low").
 - **"toughness"**: An integer between 1 and 5 indicating the toughness of the question.
 - **"difficulty"**: A string indicating the difficulty level (must be one of: "easy", "intermediate", "hard").
 - **"category"**: A string representing a general category or subfield related to the question.
-- **"ai_answer"**: A string containing a detailed AI-generated answer (approximately 3-5 sentences).
+- **"ai_answer"**: A string containing a detailed AI-generated answer (approximately 3-5 sentences). 
 
 DO NOT ADD ANY OTHER COMMENTS OR TEXT IN THE RESPONSE, I JUST WANT THE JSON ARRAY. 
+Ensure that all strings, especially within the **"ai_answer"** field, do not contain unescaped characters (like quotes or newlines) that may break the JSON formatting.
 
 **Example Output:**
 [
-  {
-    "question": "What is the time complexity of a binary search algorithm?",
-    "id": 1,
-    "topic": "Algorithms",
-    "relevance": "high",
-    "toughness": 3,
-    "difficulty": "intermediate",
-    "category": "Computer Science",
-    "ai_answer": "The time complexity of a binary search algorithm is O(log n). Binary search works by repeatedly dividing the search interval in half, which allows it to quickly narrow down the target value. This efficiency makes it ideal for searching in sorted datasets."
-  },
-  {
-    "question": "How does a convolutional neural network (CNN) process image data?",
-    "id": 2,
-    "topic": "Machine Learning",
-    "relevance": "high",
-    "toughness": 4,
-    "difficulty": "hard",
-    "category": "Deep Learning",
-    "ai_answer": "A CNN processes image data by applying convolutional filters to extract features such as edges and textures. These features are then passed through multiple layers of convolution, pooling, and fully connected layers. This structure helps the network learn hierarchical patterns in the image, which is crucial for tasks like object detection and image classification."
-  }
+    {
+        "id": 1,
+        "question": "What is the time complexity of a binary search algorithm?",
+        "topic": "Algorithms",
+        "relevance": "high",
+        "toughness": 3,
+        "difficulty": "intermediate",
+        "category": "Computer Science",
+        "ai_answer": "The time complexity of a binary search algorithm is O(log n). Binary search works by repeatedly dividing the search interval in half, which allows it to quickly narrow down the target value. This efficiency makes it ideal for searching in sorted datasets."
+    },
+    {
+        "id": 2,
+        "question": "How does a convolutional neural network (CNN) process image data?",
+        "topic": "Machine Learning",
+        "relevance": "high",
+        "toughness": 4,
+        "difficulty": "hard",
+        "category": "Deep Learning",
+        "ai_answer": "A CNN processes image data by applying convolutional filters to extract features such as edges and textures. These features are then passed through multiple layers of convolution, pooling, and fully connected layers. This structure helps the network learn hierarchical patterns in the image, which is crucial for tasks like object detection and image classification."
+    }
 ]
 `
 
-  async function getSuggestedQuestions() {
+
+
     try {
       // Call OpenAI API to fetch suggested questions
       const completion = await openai.chat.completions.create({
@@ -128,7 +189,7 @@ DO NOT ADD ANY OTHER COMMENTS OR TEXT IN THE RESPONSE, I JUST WANT THE JSON ARRA
   
        console.log(responseContent)
   
-      const parsedQuestions = JSON.parse(responseContent+']');
+      const parsedQuestions = JSON.parse(responseContent);
       console.log(parsedQuestions)
   
       // Update state with the parsed questions
@@ -150,22 +211,30 @@ DO NOT ADD ANY OTHER COMMENTS OR TEXT IN THE RESPONSE, I JUST WANT THE JSON ARRA
 
 
 
+
+
+
 if (user.role == 'INTERVIEWER'){
   useEffect(()=>{
-    getSuggestedQuestions();
-   
+    fetchInterviewDetails()
   
   },[])
 
 }
 
+useEffect(()=>{
+  if (candidateEmail){
+    fetchCandidateSkills()
+  }
 
 
+},[candidateEmail])
 
-
-
-
-
+useEffect(()=>{
+  if (candidateSkills.length>0){
+    getSuggestedQuestions()
+  }
+},[candidateSkills])
 
 
 
@@ -198,21 +267,39 @@ if (user.role == 'INTERVIEWER'){
     console.log("Current candidate answer",currentCandidateAnswer)
    
 
-    const currentEvaluation = {
+    // const currentEvaluation = {
+    //   question: currentQuestion?.question,
+    //   ideal_ans: currentQuestion?.ai_answer,
+    //   candidate_ans:currentCandidateAnswer || "not answered",
+    //   toughness: Number(currentQuestion?.toughness || 0),
+    //   relevancy: currentQuestion?.relevance,
+    //   category: currentQuestion?.category,
+    //   topic: currentQuestion?.topic,
+    //   feedback_ai: "not given",
+    //   marks_given_by_interviewers: [
+    //     {
+    //       interviewerId: user.id,
+    //       score: Number(currentMarks),
+    //     },
+    //   ],
+    // }
+
+    const data = {
       question: currentQuestion?.question,
-      ideal_ans: currentQuestion?.ai_answer,
-      toughness: Number(currentQuestion?.toughness || 0),
-      relevancy: currentQuestion?.relevance,
-      category: currentQuestion?.category,
-      topic: currentQuestion?.topic,
-      feedback_ai: "",
-      marks_given_by_interviewers: [
-        {
-          interviewerId: user.id,
-          score: Number(currentMarks),
-        },
-      ],
-    }
+      candidate_skills: candidateSkills?.join(', '),
+      candidate_ans: currentCandidateAnswer || "not answered",
+    };
+
+    const response = await getEvaluatedDataFromAI(data);
+    console.log("Evaluation Result:", response);
+
+    let currentEvaluation = {...response,question:currentQuestion?.question,candidate_ans:currentCandidateAnswer || "not answered",marks_given_by_interviewers: [
+      {
+        interviewerId: user.id,
+        score: Number(currentMarks),
+      },
+    ]}
+
 
     setAnsweredQuestions((prev)=>[...prev,currentEvaluation])
     setCurrentMarks(0);
@@ -224,15 +311,15 @@ if (user.role == 'INTERVIEWER'){
 
   const handleSubmitEvaluations = async () => { 
     setIsSubmittingEvaluation(true)
+
     const data = {
-      interviewId: interviewId,
       questionDetails: [
         ...answeredQuestions
       ],
     };
     try{
   
-      const response = await axios.post(`http://localhost:5454/api/v1/evaluation`,data,{
+      const response = await axios.put(`http://localhost:5454/api/v1/evaluation/${interviewId}/question-details`,data,{
         withCredentials:true
       })
 
@@ -278,7 +365,7 @@ if (user.role == 'INTERVIEWER'){
             question: transcript,
             ai_answer: "not fetched",
             category: "none",
-            difficulty: -1,
+            difficulty: 0,
             relevance: "none",
             topic: "none",
             toughness: 0
@@ -349,6 +436,41 @@ if (user.role == 'INTERVIEWER'){
                    </Button>
                    </div>
                   )}
+
+
+{!suggestedQuestions.length && 
+<div className="p-4 bg-white rounded-lg shadow-md">
+      <AnimatePresence>
+        {!candidateSkills.length && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="text-center text-gray-500">
+              AI is suggesting questions based on Candidate's Profile...
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {candidateSkills.length > 0 && !suggestedQuestions.length && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="text-lg font-semibold mb-2">Candidate Skills:</h3>
+          <AnimatedSkills skills={candidateSkills} />
+        </motion.div>
+      )}
+    </div>
+}
+                  
+
+
+
+
                   {suggestedQuestions?.map((q) => (
                     <Card key={q.id} className="p-2">
                       <p className="text-xs">{q.question}</p>

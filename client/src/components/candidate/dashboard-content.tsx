@@ -300,7 +300,7 @@ export function UpcomingInterviews({ candidateInterviews }) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link href={`/interview2/${interview.roomId}/${interview.id}`}>
+                        <Link href={`/candidate-interview/${interview.roomId}/${interview.id}`}>
                           <Button size="sm" variant="outline" className="text-xs">
                             <Video className="mr-2 h-3 w-3" />
                             Join Now

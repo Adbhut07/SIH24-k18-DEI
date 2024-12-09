@@ -66,7 +66,7 @@ export default function ChatCard({ channel, uid, currentQuestion,currentCandidat
     }, [])
 
     const connectSocket = useCallback(() => {
-        if (roomId.trim() && username.trim()) {
+        if (roomId.trim() && username) {
             const newSocket = io("http://localhost:5454", {
                 reconnection: true,
                 reconnectionAttempts: 5,

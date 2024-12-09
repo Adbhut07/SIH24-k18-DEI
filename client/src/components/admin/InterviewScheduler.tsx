@@ -34,6 +34,7 @@ export function InterviewScheduler() {
   const [description,setDescription] =  useState('')
   const [selectedRoom,setSelectedRoom] = useState(null)
   const [availableRooms,setAvailableRooms] = useState([])
+  const [createInterviewResponse,setCreateInterviewResponse] = useState(null)
  
 
 
@@ -180,6 +181,27 @@ const handleSelectRoom = (value)=>{
 }
 
 
+
+const createEvaluation = async(obj)=>{
+  try{
+    let data = {
+      interviewId:obj?.data?.interview?.id
+    }
+
+    const response = await axios.post(`http://localhost:5454/api/v1/evaluation`,data,{withCredentials:true})
+
+    console.log(response?.data)
+ 
+
+
+
+  }
+  catch(error){
+    console.log(error)
+  }
+}
+
+
 const handleScheduleSubmit = async ()=>{
 
   const isoDate  = getDateinIso(date,time)
@@ -201,6 +223,9 @@ const handleScheduleSubmit = async ()=>{
   console.log(rawData)
 
 
+
+
+
   try{
     setLoading(true)
 
@@ -210,6 +235,8 @@ const handleScheduleSubmit = async ()=>{
 
     toast.success(`Interview Scheduled for user ${selectedCandidate?.name}`)
 
+  
+    createEvaluation(response?.data)
 
 
   }
