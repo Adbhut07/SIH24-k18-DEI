@@ -84,7 +84,7 @@ export function MainContent() {
   const fetchProfileDetails = async () => {
 
 
-    const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${user.email}`)
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.email}`)
     console.log(response)
     return response
 
@@ -214,7 +214,7 @@ export function MainContent() {
     formData.append("file", file);
 
     try{
-      const response = await axios.post("http://localhost:8000/upload-resume", formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_PYTHON_API_ENDPOINT}/upload-resume`, formData);
       const skills = (String(response?.data)).split(",");
       return skills;
 
@@ -236,7 +236,7 @@ export function MainContent() {
       console.log(formData)
 
 
-        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData)
+        const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.id}`, formData)
         toast.success('Skills added')
 
     }
@@ -301,7 +301,7 @@ export function MainContent() {
 
     try {
       // Send the PUT request to update the profile
-      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData);
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.id}`, formData);
 
       // Handle successful response
       if (response.status === 200) {
@@ -350,7 +350,7 @@ export function MainContent() {
 
       try {
         // Send the PUT request to update the profile
-        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData);
+        const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.id}`, formData);
 
         // Handle successful response
         if (response.status === 200) {
@@ -383,7 +383,7 @@ export function MainContent() {
 
       try {
 
-        const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`, formData)
+        const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.id}`, formData)
         toast.success('Skill added')
 
         setNewSkill("")
@@ -413,7 +413,7 @@ export function MainContent() {
     }
 
     try{
-      const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${profileId}`,formData)
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${profileId}`,formData)
       toast.success('Details updated')
     }
     catch(error){
@@ -446,7 +446,7 @@ export function MainContent() {
           achievements: []
         
       }
-      const response = await axios.post(`http://localhost:5454/api/v1/userProfile/createCandidateProfile`, userData)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/createCandidateProfile`, userData)
       console.log(response)
       toast.success('Profile created')
 
@@ -491,7 +491,7 @@ export function MainContent() {
          image:fileUrl?.data?.publicUrl
        }
    
-       const response = await axios.put(`http://localhost:5454/api/v1/userProfile/${user.id}`,formData)
+       const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.id}`,formData)
        console.log(response)
    
        alert('File uploaded successfully!');

@@ -38,7 +38,7 @@ const  InterviewBoardroom = ()=> {
 
   const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.API_KEY || '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',
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',
     dangerouslyAllowBrowser: true
   })
 

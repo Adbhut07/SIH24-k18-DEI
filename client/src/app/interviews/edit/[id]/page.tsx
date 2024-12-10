@@ -59,7 +59,7 @@ const EditInterview = () => {
     console.log(rawData)
     
     try {
-        const response = await axios.patch(`http://localhost:5454/api/v1/interview/interview-update/${id}`,rawData,{
+        const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/interview-update/${id}`,rawData,{
             withCredentials:true
         })
 

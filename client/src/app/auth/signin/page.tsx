@@ -55,7 +55,7 @@ export default function SignIn() {
     setErrorMessage(null);
   
     try {
-      const response = await fetch('http://localhost:5454/api/v1/auth/signin', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/auth/signin`, {
         method: 'POST',
         credentials: 'include',
         headers: {

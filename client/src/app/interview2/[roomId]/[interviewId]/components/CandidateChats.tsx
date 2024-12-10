@@ -54,7 +54,7 @@ export default function ChatCard({ channel, uid, currentQuestion,currentCandidat
 
     const getPanelMembers = async () => {
         try {
-            const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`)
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/interviews/${interviewId}`)
             setPanelMembers(response?.data?.data?.interviewers)
         } catch (error) {
             console.log(error)
@@ -67,7 +67,7 @@ export default function ChatCard({ channel, uid, currentQuestion,currentCandidat
 
     const connectSocket = useCallback(() => {
         if (roomId.trim() && username) {
-            const newSocket = io("http://localhost:5454", {
+            const newSocket = io(`${process.env.NEXT_PUBLIC_API_ENDPOINT}`, {
                 reconnection: true,
                 reconnectionAttempts: 5,
                 reconnectionDelay: 1000

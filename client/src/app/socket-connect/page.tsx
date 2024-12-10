@@ -27,7 +27,7 @@ export default function ChatCard() {
 
   const connectSocket = useCallback(() => {
     if (roomId.trim() && username.trim()) {
-      const newSocket = io("http://localhost:5454", {
+      const newSocket = io(`${process.env.NEXT_PUBLIC_API_ENDPOINT}`, {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000

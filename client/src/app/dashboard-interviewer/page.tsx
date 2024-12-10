@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   const getAllInterviews =  async ()=>{
 
-    const response = await axios.get(`http://localhost:5454/api/v1/interviewer/getInterviews/${user.id}`,{withCredentials:true})
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interviewer/getInterviews/${user.id}`,{withCredentials:true})
     console.log(response?.data?.data)
     setInterviews(response?.data?.data)
   }
@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
     try{
 
-      const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${user.email}`,{withCredentials:true})
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.email}`,{withCredentials:true})
       setUserProfile(response?.data?.data)
 
     }

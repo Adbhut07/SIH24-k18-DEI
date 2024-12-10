@@ -21,7 +21,7 @@ const ResumeUpload = () => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:8000/upload-resume", formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_PYTHON_API_ENDPOINT}/upload-resume`, formData);
       console.log(response)
 
       const skills = (String(response?.data)).split(",");

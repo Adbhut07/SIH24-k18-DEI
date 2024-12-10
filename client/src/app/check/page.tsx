@@ -114,8 +114,8 @@ const candidateSkills = "JavaScript, React, Node.js, SQL, Data Structures";
 
   const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.API_KEY || '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',
-    dangerouslyAllowBrowser: true
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',
+    dangerouslyAllowBrowser: true 
   })
 
   const prompt = `Generate 10 interview questions related to these skills: ${candidateSkills}.
@@ -228,7 +228,7 @@ const handleEvaluateQuestion = async()=>{
   };
   try{
 
-    const response = await axios.post(`http://localhost:5454/api/v1/evaluation`,data,{withCredentials:true})
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/evaluation`,data,{withCredentials:true})
     console.log("evaluated" ,response)
 
 

@@ -46,7 +46,7 @@ export function UserManagement() {
   // Function to fetch all users
   const getAllUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5454/api/v1/user/getAllUsers',{
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/user/getAllUsers`,{
         withCredentials:true
       });
       // console.log(response.data)
@@ -113,7 +113,7 @@ export function UserManagement() {
 
 
       const response = await axios.post(
-        'http://localhost:5454/api/v1/user/createUser',
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/user/createUser`,
         newUserAdded, // `newUser` should be the request body
         {
           withCredentials:true
@@ -142,7 +142,7 @@ export function UserManagement() {
     try {
 
       // Call the API to delete the user
-      await axios.delete(`http://localhost:5454/api/v1/user/${userId}`,{
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/user/${userId}`,{
         withCredentials:true
       });
 

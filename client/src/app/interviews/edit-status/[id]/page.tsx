@@ -28,7 +28,7 @@ const EditStatus = ()=>{
 
         try{
 
-            const response = await axios.put(`http://localhost:5454/api/v1/interview/status/${id}`,{
+            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/status/${id}`,{
                 "status":selectedStatus
             },
             {

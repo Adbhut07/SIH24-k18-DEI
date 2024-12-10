@@ -24,7 +24,7 @@ export default function TestPage() {
       const base64PDF = reader.result as string;
 
       try {
-        const response = await fetch("http://localhost:8000/extract_skills", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_PYTHON_API_ENDPOINT}/extract_skills`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

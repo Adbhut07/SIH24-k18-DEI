@@ -67,7 +67,7 @@ const FaceRecognition = () => {
 
   const fetchFirstImage = async () => {
     try {
-      const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${user.email}`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.email}`);
       setFirstImage(response?.data?.data?.image);
     } catch (error) {
       console.error('Error fetching first image:', error);

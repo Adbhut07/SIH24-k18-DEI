@@ -77,7 +77,7 @@ export default function FullBoardRoom({channel,uid,leaveChannel}) {
 const fetchCandidateSkills = async ()=>{
 
   try{
-    const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${candidateEmail}`,)
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${candidateEmail}`,)
     console.log(response?.data?.data?.skills)
 
     setCandidateSkills(response?.data?.data?.skills)
@@ -93,7 +93,7 @@ const fetchCandidateSkills = async ()=>{
  const fetchInterviewDetails = async () => {
 
   try {
-    const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`);
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/interviews/${interviewId}`);
     setCandidateEmail(response?.data?.data?.candidate?.email)
     console.log(response?.data?.data?.candidate?.email)
     
@@ -319,7 +319,7 @@ useEffect(()=>{
     };
     try{
   
-      const response = await axios.put(`http://localhost:5454/api/v1/evaluation/${interviewId}/question-details`,data,{
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/evaluation/${interviewId}/question-details`,data,{
         withCredentials:true
       })
 

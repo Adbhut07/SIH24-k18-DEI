@@ -154,7 +154,7 @@ export default function DashboardContent() {
 
   const fetchUpcomingInterviews = async()=>{
     try{
-      const response = await axios.get(`http://localhost:5454/api/v1/candidate/${user.email}/interviews`,{
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/candidate/${user.email}/interviews`,{
         withCredentials:true
       })
       const interviews = response?.data?.interviews

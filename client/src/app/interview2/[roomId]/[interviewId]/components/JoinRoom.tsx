@@ -68,7 +68,7 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
 
   const fetchRoomDetails =  async ()=>{
 
-    const response = await axios.get(`http://localhost:5454/api/v1/agoraRoom/getRoom/${roomId}`)
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/agoraRoom/getRoom/${roomId}`)
     const roomDetails = response?.data?.data
     setChannel(roomDetails?.channel)
     setAppCertificate(roomDetails?.appCertificate);
@@ -108,7 +108,7 @@ const JoinRoom = ({ onJoin, isError, setIsError, isLoading }: JoinRoomProps) => 
 
 
 
-      const response = await axios.post(`http://localhost:5454/api/v1/agoraRoom/agoraToken`, rawData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/agoraRoom/agoraToken`, rawData);
      
       setToken(response?.data?.token)
       toast.success('Token Generated')

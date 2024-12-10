@@ -68,7 +68,7 @@ export function InterviewScheduler() {
 
     console.log(createData)
     try {
-      const response = await axios.post(`http://localhost:3000/api/v1/interview/create`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/create`, {
         createData
       },
       {
@@ -91,7 +91,7 @@ export function InterviewScheduler() {
   // Function to fetch all users
   const getAllUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5454/api/v1/user/getAllUsers',{
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/user/getAllUsers`,{
         withCredentials:true
       });
       // console.log(response.data)
@@ -124,7 +124,7 @@ export function InterviewScheduler() {
   const getRooms = async()=>{
 
     try{
-      const response = await axios.get(`http://localhost:5454/api/v1/agoraRoom/rooms`)
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/agoraRoom/rooms`)
       setAvailableRooms( response?.data?.data);
 
     }
@@ -188,7 +188,7 @@ const createEvaluation = async(obj)=>{
       interviewId:obj?.data?.interview?.id
     }
 
-    const response = await axios.post(`http://localhost:5454/api/v1/evaluation`,data,{withCredentials:true})
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/evaluation`,data,{withCredentials:true})
 
     console.log(response?.data)
  
@@ -229,7 +229,7 @@ const handleScheduleSubmit = async ()=>{
   try{
     setLoading(true)
 
-    const response = await axios.post(`http://localhost:5454/api/v1/interview/create`,rawData,{
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interview/create`,rawData,{
       withCredentials:true
     })
 

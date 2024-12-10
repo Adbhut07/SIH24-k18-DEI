@@ -20,7 +20,7 @@ const VideoCall = () => {
     const fetchToken = async (channelName: string, role: 'publisher' | 'subscriber') => {
         try {
             const response = await fetch(
-                `http://localhost:5454/api/v1/auth/generate-token?channelName=${channelName}&uid=${uid}&role=${role}`
+                `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/auth/generate-token?channelName=${channelName}&uid=${uid}&role=${role}`
             );
             const data = await response.json();
             setToken(data.token);
