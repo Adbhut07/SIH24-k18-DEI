@@ -163,21 +163,13 @@ const addQuestionDetails = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const validatedQuestionDetails = zod_1.z
             .array(evaluationItemSchema)
             .parse(questionDetails);
-<<<<<<< HEAD
-        const evaluation = yield prisma.evaluation.findUnique({
-=======
         const evaluation = yield prisma.evaluation.findFirst({
->>>>>>> db2a0412d08fbfe11708ab802071fe7e634be087
             where: { interviewId },
         });
         if (!evaluation) {
             res.status(404).json({
                 success: false,
-<<<<<<< HEAD
-                message: `Evaluation not found for interview ID: ${interviewId}`,
-=======
                 message: `Evaluation not found for interview ID: ${interviewId}`
->>>>>>> db2a0412d08fbfe11708ab802071fe7e634be087
             });
             return;
         }

@@ -26,6 +26,9 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { motion, AnimatePresence } from 'framer-motion'
 import { AnimatedSkills } from "./animated-skills"
 import useWebSocket from "@/hooks/useWebSocket"
+import re from 're'
+import json from 'json'
+import Papa from 'papaparse';
 
 export default function FullBoardRoom({channel,uid,leaveChannel}) {
   
@@ -125,86 +128,67 @@ const fetchCandidateSkills = async ()=>{
 
     const skills = candidateSkills.join(', ');
 
-    const prompt = `
-Generate 15 interview questions related to these skills: ${skills}. 
-Return the result as a **valid JSON array** where each element is a JSON object. 
-Also ensure the proper formatting, proper terminated strings as keys, and that all strings are correctly escaped. 
-Ensure the JSON is properly formatted with no syntax errors. 
-Each object should have the following fields:
-- **"id"**: A unique identifier for the question.
-- **"question"**: A string representing the interview question.
-- **"topic"**: A string indicating the specific topic related to the skills.
-- **"relevance"**: A string indicating the relevance of the question to the skills (must be one of: "high", "medium", "low").
-- **"toughness"**: An integer between 1 and 5 indicating the toughness of the question.
-- **"difficulty"**: A string indicating the difficulty level (must be one of: "easy", "intermediate", "hard").
-- **"category"**: A string representing a general category or subfield related to the question.
-- **"ai_answer"**: A string containing a detailed AI-generated answer (approximately 3-5 sentences). 
+    const prompt = `Generate a set of 15 interview questions related to ${skills} Format the response as a JSON array where each element is an object with the following structure:
+{
+  "id": [unique integer from 1 to 15],
+  "question": [string containing the interview question],
+  "topic": [string indicating the specific topic],
+  "relevance": ["high", "medium", or "low"],
+  "toughness": [integer between 1 and 5],
+  "difficulty": ["easy", "intermediate", or "hard"],
+  "category": [string representing a subfield],
+  "ai_ans": [detailed AI-generated answer (3-5 sentences), with properly escaped characters]
+}
+Ensure all questions are directly related to Python programming, data analysis, or machine learning, and cover a range of subtopics within these skills. Provide diverse question types (technical, conceptual, scenario-based). Format the JSON correctly, with no errors.
 
-DO NOT ADD ANY OTHER COMMENTS OR TEXT IN THE RESPONSE, I JUST WANT THE JSON ARRAY. 
-Ensure that all strings, especially within the **"ai_answer"** field, do not contain unescaped characters (like quotes or newlines) that may break the JSON formatting.
+`;
 
-**Example Output:**
-[
-    {
-        "id": 1,
-        "question": "What is the time complexity of a binary search algorithm?",
-        "topic": "Algorithms",
-        "relevance": "high",
-        "toughness": 3,
-        "difficulty": "intermediate",
-        "category": "Computer Science",
-        "ai_answer": "The time complexity of a binary search algorithm is O(log n). Binary search works by repeatedly dividing the search interval in half, which allows it to quickly narrow down the target value. This efficiency makes it ideal for searching in sorted datasets."
-    },
-    {
-        "id": 2,
-        "question": "How does a convolutional neural network (CNN) process image data?",
-        "topic": "Machine Learning",
-        "relevance": "high",
-        "toughness": 4,
-        "difficulty": "hard",
-        "category": "Deep Learning",
-        "ai_answer": "A CNN processes image data by applying convolutional filters to extract features such as edges and textures. These features are then passed through multiple layers of convolution, pooling, and fully connected layers. This structure helps the network learn hierarchical patterns in the image, which is crucial for tasks like object detection and image classification."
-    }
-]
-`
+try {
+  // Call OpenAI API to fetch suggested questions
+  const completion = await openai.chat.completions.create({
+    model: "meta-llama/llama-3.2-3b-instruct:free",
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+  });
+
+  let responseContent = completion?.choices?.[0]?.message?.content;
+
+  // Check if content is received from the AI model
+  if (!responseContent) {
+    throw new Error("No content received from the AI model.");
+  }
+
+  // Log the response to check for correctness
+  console.log("AI Response:", responseContent);
 
 
+  const firstIndex = String(responseContent).indexOf('[')
+  const secondIndex = String(responseContent).indexOf(']')
+  responseContent = responseContent.slice(firstIndex,secondIndex+1)
 
-    try {
-      // Call OpenAI API to fetch suggested questions
-      const completion = await openai.chat.completions.create({
-        model: "meta-llama/llama-3.2-3b-instruct:free",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-           },
-        ],
-      });
-  
-      const responseContent = completion?.choices?.[0]?.message?.content;
-      if (!responseContent) {
-        throw new Error("No content received from the AI model.");
-      }
-  
-       console.log(responseContent)
-  
-      const parsedQuestions = JSON.parse(responseContent);
-      console.log(parsedQuestions)
-  
-      // Update state with the parsed questions
+  // Attempt to parse the response content into JSON
+  try {
+    const parsedQuestions = JSON.parse(responseContent);
+
+    // Check if the parsed data is an array and contains the expected structure
+    if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
+      console.log("Parsed Questions:", parsedQuestions);
+      // Optionally update state or perform further actions with the parsed questions
       setSuggestedQuestions(parsedQuestions);
-  
-      
-  
-      if (parsedQuestions.length === 0) {
-        console.warn("No valid questions could be parsed from the response.");
-      } else {
-        console.log("Parsed Questions:", parsedQuestions);
-      }
-    } catch (error: any) {
-      console.error("Error in getSuggestedQuestions:", error.message);
+    } else {
+      console.warn("Parsed content is not in the expected array format or is empty.");
     }
+  } catch (jsonError) {
+    console.error("Error parsing JSON response:", jsonError.message);
+  }
+
+} catch (error: any) {
+  console.error("Error in getSuggestedQuestions:", error.message);
+}
   }
 
 
@@ -363,7 +347,7 @@ useEffect(()=>{
           
             id: uuid(),
             question: transcript,
-            ai_answer: "not fetched",
+            ideal_ans: "not fetched",
             category: "none",
             difficulty: 0,
             relevance: "none",
