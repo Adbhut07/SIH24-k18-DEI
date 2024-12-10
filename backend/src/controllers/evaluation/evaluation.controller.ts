@@ -104,14 +104,14 @@ export const getEvaluationsByInterviewId = async (req: Request, res: Response): 
 
   try {
     const evaluations = await prisma.evaluation.findMany({
-      where: { interviewId },
+      where: { interviewId :interviewId},
       include: { interview: true },
     });
 
     if (!evaluations.length) {
       res.status(404).json({
         success: false,
-        message: `No evaluations found for interview ID: ${interviewId}`,
+        message: `No evaluations found for interview ID: ${interviewId}`
       });
       return;
     }
@@ -176,14 +176,14 @@ export const addQuestionDetails = async (req: Request, res: Response): Promise<a
       .array(evaluationItemSchema)
       .parse(questionDetails);
 
-    const evaluation = await prisma.evaluation.findUnique({
+    const evaluation = await prisma.evaluation.findFirst({
       where: { interviewId },
     });
 
     if (!evaluation) {
       res.status(404).json({
         success: false,
-        message: `Evaluation not found for interview ID: ${interviewId}`,
+        message: `Evaluation not found for interview ID: ${interviewId}`
       });
       return;
     }

@@ -96,7 +96,7 @@ export default function SignIn() {
         console.log('User state updated:', user);
   
         // Navigate after ensuring state is updated
-        setTimeout(() => {
+       
           if (user.role === 'CANDIDATE') {
             router.push('/dashboard-candidate');
           } else if (user.role==='ADMIN') {
@@ -105,7 +105,7 @@ export default function SignIn() {
           else{
             router.push('/dashboard-interviewer');
           }
-        }, 10);
+        
       } else {
         throw new Error(responseData.message || 'Failed to sign in');
       }
@@ -162,7 +162,7 @@ export default function SignIn() {
               {errorMessage && (
                 <p className="text-red-500 text-sm">{errorMessage}</p>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gray-800" disabled={isLoading}>
                 {isLoading ? 
                 <>
                 <Loader2 className='animate-spin'/>

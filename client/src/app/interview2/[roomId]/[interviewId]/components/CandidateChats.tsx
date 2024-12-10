@@ -5,13 +5,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, MessageSquare, LogIn, LogOut, Users } from 'lucide-react'
+import { Send, MessageSquare, LogIn, LogOut, Users, Mic, MicOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { io, Socket } from "socket.io-client"
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { useParams } from 'next/navigation'
 import axios from 'axios'
-import AgoraRTC from 'agora-rtc-react'
+import 'regenerator-runtime/runtime'
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+import { useAppSelector } from '@/lib/store/hooks'
 
 interface Message {
     id: string
@@ -25,8 +27,7 @@ interface ChatCardProps {
     currentQuestion: { question: string } | null;
 }
 
-export default function ChatCard({ channel, uid, currentQuestion }: ChatCardProps) {
-
+export default function ChatCard({ channel, uid, currentQuestion,currentCandidateAnswer, setCurrentCandidateAnswer }) {
     const [socket, setSocket] = useState<Socket | null>(null)
     const [roomId, setRoomId] = useState(channel)
     const [username, setUsername] = useState(uid)
@@ -36,34 +37,36 @@ export default function ChatCard({ channel, uid, currentQuestion }: ChatCardProp
     const [connectionError, setConnectionError] = useState<string | null>(null)
     const scrollAreaRef = useRef<HTMLDivElement>(null)
     const [inputQuestion, setInputQuestion] = useState(null)
+    const [panelMembers, setPanelMembers] = useState([])
+    const { roomIdAgora, interviewId } = useParams()
+    const [isRecording, setIsRecording] = useState(false)
 
-    const[panelMembers,setPanelMembers] = useState([])
-    const {roomIdAgora,interviewId} = useParams()
-
-   
-
-
-
-     
-const getPanelMembers = async ()=>{
-    try{
-        const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`);
-
-        setPanelMembers(response?.data?.data?.interviewers)
+    const user = useAppSelector((state) => state.user) 
 
 
+
+    const {
+        transcript,
+        resetTranscript,
+        listening,
+        browserSupportsSpeechRecognition,
+    } = useSpeechRecognition()
+
+    const getPanelMembers = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5454/api/v1/interview/interviews/${interviewId}`)
+            setPanelMembers(response?.data?.data?.interviewers)
+        } catch (error) {
+            console.log(error)
+        }
     }
-    catch(error){
-        console.log(error)
-    }
-}
 
-useEffect(()=>{
-  getPanelMembers();
-})
+    useEffect(() => {
+        getPanelMembers()
+    }, [])
 
     const connectSocket = useCallback(() => {
-        if (roomId.trim() && username.trim()) {
+        if (roomId.trim() && username) {
             const newSocket = io("http://localhost:5454", {
                 reconnection: true,
                 reconnectionAttempts: 5,
@@ -79,13 +82,19 @@ useEffect(()=>{
             })
 
             newSocket.on("receiveMessage", (data: Message) => {
+                
                 setMessages((prevMessages) => {
                     const messageExists = prevMessages.some(msg => msg.id === data.id)
                     if (!messageExists) {
+                        
                         return [...prevMessages, data]
                     }
                     return prevMessages
                 })
+                if (data?.message.startsWith("Answer:")) {
+                    const questionText = data.message.slice("Answer:".length).trim();
+                    setCurrentCandidateAnswer(questionText);
+                  }
             })
 
             newSocket.on("connect_error", (error) => {
@@ -125,12 +134,15 @@ useEffect(()=>{
         }
     }
 
+    useEffect(()=>{
+        console.log(currentCandidateAnswer)
+    },[setCurrentCandidateAnswer])
+
     const handleLeave = () => {
         if (socket) {
             socket.emit("leaveRoom", roomId)
             socket.disconnect()
         }
-
         setSocket(null)
         setJoined(false)
         setMessages([])
@@ -139,95 +151,68 @@ useEffect(()=>{
         setConnectionError(null)
     }
 
-    useEffect(() => {
-        if (currentQuestion) setInputQuestion(currentQuestion);
-
-    }, [currentQuestion])
-
-    useEffect(() => {
-        sendQuestion()
-    }, [inputQuestion])
-
-    useEffect(() => {
-        handleJoin()
-    }, [])
-
-
-    const sendQuestion = () => {
-        if (inputQuestion?.question && socket) {
+    const sendMessage = (messageToSend: string) => {
+        if (messageToSend && socket) {
             const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
             const messageData = {
                 id: messageId,
                 roomId,
-                message: inputQuestion?.question,
-                sender: username
+                message: messageToSend,
+                sender: user.name
             }
-
-
             socket.emit("sendMessage", messageData)
-
             setMessages((prevMessages) => [
                 ...prevMessages,
-                {
-                    id: messageId,
-                    sender: username,
-                    message: inputQuestion?.question
-                }
+                { id: messageId, sender: user.name, message: messageToSend }
             ])
-
-            setInputQuestion(null)
-
-
         }
     }
 
+    useEffect(()=>{
+        sendMessage(currentQuestion?.question)
+    },[currentQuestion])
 
+    const handleStartRecording = () => {
+        setIsRecording(true)
+        resetTranscript()
+        SpeechRecognition.startListening({ continuous: true })
+    }
 
-
-
-
-
-    const sendMessage = () => {
-        if (inputMessage.trim() && socket) {
-            const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-
-            const messageData = {
-                id: messageId,
-                roomId,
-                message: inputMessage,
-                sender: username
-            }
-
-            socket.emit("sendMessage", messageData)
-
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                {
-                    id: messageId,
-                    sender: username,
-                    message: inputMessage
-                }
-            ])
-
-            setInputMessage("")
-        }
+    const handleStopRecording = () => {
+        setIsRecording(false)
+        SpeechRecognition.stopListening()
+        sendMessage('Answer:'+transcript)
+        resetTranscript()
     }
 
     return (
         <Card className="h-[95vh] flex flex-col bg-gradient-to-b from-background to-secondary/20">
             <CardHeader className="border-b">
-                <CardTitle className="flex ">
-                    <div className="flex w-full justify-between">
-                        <div className='flex gap-2 '>
-                            <MessageSquare className="w-5 h-5" />
-                            <span>Interview Chat</span>
-                        </div>
-
-                        <div className='text-sm flex items-center justify-center bg-red-500 text-white px-2 rounded-lg '> ● Live</div>
-
+                <CardTitle className="flex justify-between">
+                    <div className='flex gap-2'>
+                        <MessageSquare className="w-5 h-5" />
+                        <span>Interview Chat</span>
                     </div>
+                    <div className='text-sm flex items-center bg-red-500 text-white px-2 rounded-lg'>● Live</div>
+
+
+                    {user.role === 'CANDIDATE' && 
+                    <div className='flex flex-col gap-2 absolute top-[82vh] right-[25%]'>
+
+
+                   
+                    <Button size="sm" variant="outline" onClick={handleStartRecording} disabled={isRecording}>
+                        <Mic className="w-4 h-4 mr-1" /> Start Answering
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={handleStopRecording} disabled={!isRecording}>
+                        <MicOff className="w-4 h-4 mr-1" /> End Answering
+                    </Button>
+                    </div>
+}
+
                 </CardTitle>
             </CardHeader>
+
             <Card className="mx-4 mt-4 bg-primary/5">
                 <CardHeader className="py-2">
                     <CardTitle className="text-sm flex items-center">
@@ -248,46 +233,37 @@ useEffect(()=>{
                     </div>
                 </CardContent>
             </Card>
+            
             <CardContent className="flex-grow overflow-hidden p-0">
-                {!joined ? (
-                    <div className="p-4 space-y-4">
-                        <div className="text-sm">Joining the interview...</div>
-                    </div>
-                ) : (
-                    <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
-                        <AnimatePresence>
-                            {messages.map((message) => (
-                                <motion.div
-                                    key={message.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className={`flex items-start space-x-2 mb-4 ${message.sender === username ? 'justify-end' : 'justify-start'
-                                        }`}
-                                >
-                                    <div
-                                        className={`rounded-lg p-1.5 max-w-[80%] ${message.sender === username
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-secondary text-secondary-foreground'
-                                            }`}
-                                    >
-                                        <p className="text-xs font-semibold mb-1" style={{ color: message.sender === username ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))' }}>
-                                            {message.sender}
-                                        </p>
-                                        <p className="text-xs">{message.message}</p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </ScrollArea>
-                )}
+                <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+                    <AnimatePresence>
+                        {messages.map((message) => (
+                            <motion.div
+                                key={message.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className={`flex items-start space-x-2 mb-4 ${message.sender === user.name ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div className={`rounded-lg p-1.5 max-w-[80%] ${message.sender === user.name ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
+                                    <p className="text-xs font-semibold mb-1">{message.sender}</p>
+                                    <p className="text-xs">{message.message}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </ScrollArea>
+                
             </CardContent>
+
             {joined && (
-                <CardFooter className="border-t p-4">
+                <CardFooter className="border-t p-4 flex items-center space-x-2">
+                    
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
-                            sendMessage()
+                            sendMessage(inputMessage)
+                            setInputMessage("")
                         }}
                         className="flex w-full items-center space-x-2"
                     >
@@ -299,18 +275,11 @@ useEffect(()=>{
                             className="flex-grow text-sm"
                         />
                         <Button type="submit" size="icon" className="shrink-0">
-                            <Send className="h-2 w-2" />
-                            <span className="sr-only">Send message</span>
+                            <Send className="h-4 w-4" />
                         </Button>
                     </form>
                 </CardFooter>
             )}
-            {connectionError && (
-                <div className="bg-destructive/10 text-destructive p-2 text-sm">
-                    {connectionError}
-                </div>
-            )}
         </Card>
     )
 }
-

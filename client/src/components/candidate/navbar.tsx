@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import Logout from "../Logout"
+import { Audiowide } from 'next/font/google'
+
+const audiowide = Audiowide({ subsets: ['latin'], weight: '400' })
+
 
 
 export function Navbar() {
@@ -22,7 +26,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-6">
             <Link href={'/'}>
-              <span className="text-xl font-bold">Skill Matrix</span>
+              <span className={`text-xl font-bold ${audiowide.className}`}>Skill Matrix</span>
 
             </Link>
 

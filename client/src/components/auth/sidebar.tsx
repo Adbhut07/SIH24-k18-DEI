@@ -2,6 +2,11 @@ import { Home, Calendar, BarChart, BookOpen, Award, Bookmark } from 'lucide-reac
 import { Button } from "@/components/ui/button"
 import Image from 'next/image'
 import { motion } from "framer-motion"
+import { Audiowide } from 'next/font/google'
+
+const audiowide = Audiowide({ subsets: ['latin'], weight: '400' })
+
+
 export function Sidebar() {
   return (
     <aside className="w-[50%] bg-background hidden md:flex justify-center  border-r border-border h-screen sticky top-0 overflow-y-auto bg-white text-black">
@@ -18,7 +23,9 @@ export function Sidebar() {
 
 
     <div className='flex items-center justify-center flex-col p-5'>
-     <h1 className='font-bold text-3xl'>SkillMatrix</h1>
+
+     <h1 className={`font-bold  text-3xl ${audiowide.className}`}>SkillMatrix</h1>
+
       <h2 className='mt-5 font-bold text-xl'>Redefining Recruitment with Intelligence and Fairness.</h2>
      <h2 className='text-sm mt-3'>"A game-changer for recruitment in high-stakes organizations like DRDO."</h2>
      </div>
