@@ -22,7 +22,8 @@ export default function AnimatedHero() {
 
   // Enhanced animation for the 'AI' text
   const aiScale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 2.5, 1.5])
-  const aiRotate = useTransform(scrollYProgress, [0, 0.5, 1], [0, 360, 0])
+  const aiRotate = useTransform(scrollYProgress, [0, 0.5, 1], [0, 360, 360])
+
 
   // Floating animation for the "Solutions" badge
   const floatY = useMotionValue(0)
@@ -79,15 +80,16 @@ export default function AnimatedHero() {
               >
                 <span className="text-black mr-10">Empowering</span>
                 <motion.span
-                  style={{
-                    display: 'inline-block',
-                    scale: aiScale,
-                    rotate: aiRotate,
-                  }}
-                  className="inline-block origin-center text-orange-400"
-                >
-                  AI
-                </motion.span>
+  style={{
+    display: 'inline-block',
+    scale: aiScale,
+    rotate: aiRotate, // This will rotate only once and then stop
+  }}
+  className="inline-block origin-center text-orange-400"
+>
+  AI
+</motion.span>
+
                 <span className="ml-10 text-black">with Transparency</span>
               </motion.span>
               <br />
