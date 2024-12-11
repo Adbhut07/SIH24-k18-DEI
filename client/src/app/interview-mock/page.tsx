@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Papa from 'papaparse';
+
 
 // TypeScript interfaces for type safety
 interface WebSocketMessage {
@@ -25,7 +27,7 @@ export default function TestPage() {
   // State hooks for managing component state
   const [question, setQuestion] = useState<string>("");
   const [topics, setTopics] = useState<string>("");
-  const [response, setResponse] = useState<{} | null>(null);
+  const [response, setResponse] = useState("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
@@ -48,9 +50,34 @@ export default function TestPage() {
 
     ws.onmessage = (event: MessageEvent) => {
       try {
-        const data: WebSocketResponse = JSON.parse(event.data);
-        setResponse(data);
-        console.log("Received response:", data);
+        const data = event.data;
+        console.log(data)
+
+        let parsed = String(data).split("|");
+
+// Ensure each field is cleaned to remove stray quotes or whitespace
+parsed = parsed.map((field) => field.trim().replace(/^"|"$/g, ""));
+
+if (parsed.length === 7) {
+    const [relevance, idealAnswer, topic, category, feedback, toughness, suggestions] = parsed;
+
+    const formattedData = {
+        relevance,
+        idealAnswer,
+        topic,
+        category,
+        feedback,
+        toughness,
+        suggestions
+    };
+
+    console.log(formattedData);
+} else {
+    console.error("Parsing failed. Ensure the response format matches the expected structure.");
+}
+        
+        setResponse(parsed.join(", "));
+        
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
         setResponse({ error: "Failed to parse server response" });
@@ -89,12 +116,13 @@ export default function TestPage() {
     }
 
     const payload: WebSocketMessage = {
-      question,
+      question:question,
       topics: topics,
     };
 
     try {
       ws.send(JSON.stringify(payload));
+      console.log(payload)
       setConnectionError(null);
     } catch (error) {
       console.error("Error sending WebSocket message:", error);

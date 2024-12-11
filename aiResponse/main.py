@@ -192,7 +192,7 @@ async def evaluate_answer(question: str, candidate_skills: str, candidate_ans: s
 
 
 # Endpoint to evaluate  interview questions
-async def evaluate_answer(question: str, topics: str):
+async def evaluate_question(question: str, topics: str):
     """Evaluate the candidate's answer using OpenRouter AI."""
     try:
         headers = {
@@ -202,21 +202,38 @@ async def evaluate_answer(question: str, topics: str):
         }
 
         prompt = f"""
-        Evaluate the following interview scenario:
+Evaluate the following interview scenario:
 
-        Question: {question}
-        Topics: {topics}
+Question: {question}
+Topics: {topics}
 
-        Evaluation Criteria:
-        1. **Relevance**: Assess how well question relates to the  listed topics (out of 10).
-        2. **Ideal Answer**: Provide the ideal answer for this question.
-        3. **Topic**: Identify the topic the question belongs to.
-        4. **Category**: Classify the question into a specific category (e.g., technical, behavioral, etc.).
-        5. **Feedback**: Give constructive feedback for asking that questions if it's relevant to topics?
-        7. **Toughness**: Rate the question's difficulty level based on that topics(out of 10).
+Provide a comprehensive evaluation in CSV format using a pipe (`|`) as the separator with the following columns:
+relevance|ideal_answer|topic|category|feedback|toughness|suggestions_for_improvement
 
-       provide a proper json format for the above scenario
-        """
+Instructions:
+- Relevance: Rate alignment with topics (1-10 integer), only numbers (1-10), no quotes.
+- Ideal Answer: Concise, clear response without line breaks or quotes.
+- Topic: A single subject area (e.g., Electrical Engineering).
+- Category: One of these values: technical, behavioral, situational.
+- Feedback: Short and constructive, no quotes.
+- Toughness: Difficulty rating (1-10 integer), only numbers (1-10), no quotes.
+- Suggestions: Short improvement suggestion, no quotes.
+
+Formatting Guidelines:
+- Use `|` to separate fields.
+- Ensure no field contains `|` or line breaks.
+- Do not wrap any values in double quotes or include stray punctuation.
+- Example of expected format:
+  9|Current equals voltage divided by resistance|Electrical Engineering|Technical|Clear but could include practical examples|6|Add practical examples
+
+Generate the response strictly in this format:
+<relevance>|<ideal_answer>|<topic>|<category>|<feedback>|<toughness>|<suggestions_for_improvement>
+"""
+
+
+
+
+
 
         body = {
             "model": "meta-llama/llama-3.2-3b-instruct:free",
@@ -231,11 +248,14 @@ async def evaluate_answer(question: str, topics: str):
                 headers=headers,
             )
 
+            
+
             response.raise_for_status()
             result = response.json()
-
+            
             content = result["choices"][0]["message"]["content"]
-            return json.loads(content)
+            print(content)
+            return content
 
     except Exception as e:
         logger.error(f"Evaluation process failed: {e}")
@@ -282,11 +302,13 @@ async def websocket_endpoint(websocket: WebSocket):
             question = data.get("question")
             topics = data.get("topics")
 
+            print(question, topics)
+
             if not all([question, topics]):
                 await websocket.send_json({"error": "Missing required fields"})
                 continue
 
-            result = await evaluate_answer(question, topics)
+            result = await evaluate_question(question, topics)
             await websocket.send_json(result)
 
     except WebSocketDisconnect:
