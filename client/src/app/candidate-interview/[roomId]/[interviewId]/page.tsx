@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation"
 import Call from "./components/Call"
+import InterviewFocusGuard from "@/components/tab-switching/InterviewFocusGuard"
 
 
 export default function InterviewPage(){
@@ -10,7 +11,7 @@ export default function InterviewPage(){
 
         <div>
 
-            
+        
 
         <Call/>
 

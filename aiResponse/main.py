@@ -2,9 +2,9 @@ import os
 import json
 import traceback
 import httpx
-import fitz  # PyMuPDF for PDF text extraction
+import fitz  
 import logging
-
+import numpy as np
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware

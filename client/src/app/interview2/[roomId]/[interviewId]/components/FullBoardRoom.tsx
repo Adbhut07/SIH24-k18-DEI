@@ -139,8 +139,6 @@ const fetchCandidateSkills = async ()=>{
   "category": [string representing a subfield],
   "ai_ans": [detailed AI-generated answer (3-5 sentences), with properly escaped characters]
 }
-Ensure all questions are directly related to Python programming, data analysis, or machine learning, and cover a range of subtopics within these skills. Provide diverse question types (technical, conceptual, scenario-based). Format the JSON correctly, with no errors.
-
 `;
 
 try {

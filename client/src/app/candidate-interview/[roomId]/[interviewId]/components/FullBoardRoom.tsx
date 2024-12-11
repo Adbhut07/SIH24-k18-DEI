@@ -26,6 +26,7 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { motion, AnimatePresence } from 'framer-motion'
 import { AnimatedSkills } from "./animated-skills"
 import useWebSocket from "@/hooks/useWebSocket"
+import InterviewFocusGuard from "@/components/tab-switching/InterviewFocusGuard"
 
 export default function FullBoardRoom({channel,uid,leaveChannel}) {
   
@@ -389,6 +390,8 @@ useEffect(()=>{
 
 
   return (
+    <>
+    <InterviewFocusGuard />
     <div className="h-screen bg-background p-4">
     <div className="grid grid-cols-5 gap-4 h-full">
       {user.role === 'INTERVIEWER' && (
@@ -559,5 +562,6 @@ useEffect(()=>{
       <CandidateChats currentCandidateAnswer={currentCandidateAnswer} setCurrentCandidateAnswer={setCurrentCandidateAnswer} currentQuestion={currentQuestion} channel={channel} uid={uid} /> 
     </div>
   </div>
+  </>
   )
 }
