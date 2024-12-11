@@ -1,17 +1,23 @@
 import os
 import json
 import traceback
+import cv2
 import httpx
 import fitz  
 import logging
 import numpy as np
+from ultralytics import YOLO
+import base64
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
+
+# model = YOLO('yolov8n.pt')
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -210,6 +216,69 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"Unexpected WebSocket error: {e}")
         await websocket.close()
 
+
+@app.websocket("/detect-mobile")
+async def mobile_detection_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time mobile phone detection 
+    using object detection
+    """
+    await websocket.accept()
+    try:
+        while True:
+            # Receive base64 encoded image from frontend
+            data = await websocket.receive_json()
+            
+            # Extract base64 image 
+            if 'image' not in data:
+                await websocket.send_json({
+                    "error": "No image received", 
+                    "mobile_detected": False
+                })
+                continue
+
+            # Decode base64 image
+            try:
+                image_data = base64.b64decode(data['image'].split(',')[1])
+                image = Image.open(io.BytesIO(image_data))
+                
+                # Convert PIL Image to numpy array
+                frame = np.array(image)
+                
+                # Perform object detection
+                results = model(frame)
+                
+                # Check for mobile phones (class 67 in COCO dataset)
+                mobile_phones = [
+                    det for det in results[0].boxes.data 
+                    if int(det[5]) == 67 and float(det[4]) > 0.5  # Confidence threshold
+                ]
+                
+                # Prepare response
+                response = {
+                    "mobile_detected": len(mobile_phones) > 0,
+                    "mobile_count": len(mobile_phones),
+                    "details": [
+                        {
+                            "confidence": float(phone[4]),
+                            "bbox": [float(x) for x in phone[:4]]
+                        } for phone in mobile_phones
+                    ]
+                }
+                
+                await websocket.send_json(response)
+                
+            except Exception as e:
+                await websocket.send_json({
+                    "error": str(e),
+                    "mobile_detected": False
+                })
+
+    except WebSocketDisconnect:
+        logger.info("Mobile detection WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"Unexpected mobile detection error: {e}")
+        await websocket.close()
 
 # Health check endpoint
 @app.get("/health")

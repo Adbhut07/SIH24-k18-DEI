@@ -15,7 +15,7 @@ const loadImage = (url) => {
 };
 
 const FaceRecognition = () => {
-  const [isSamePerson, setIsSamePerson] = useState(null);
+  const [isSamePerson, setIsSamePerson] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [detectionDone, setDetectionDone] = useState(false);
   const [firstImage, setFirstImage] = useState(null);
@@ -40,11 +40,17 @@ const FaceRecognition = () => {
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
       ]);
       setLoading(false);
+      console.log("SSD MobileNetV1 Model Loaded:", faceapi.nets.ssdMobilenetv1.isLoaded);
+      console.log("Face Recognition Net Loaded:", faceapi.nets.faceRecognitionNet.isLoaded);
     };
+    
 
     const initializeWebcam = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 1280, height: 720 }
+        });
+        
         if (webcamRef.current) {
           webcamRef.current.srcObject = stream;
           webcamRef.current.onloadedmetadata = () => {
@@ -97,21 +103,22 @@ const FaceRecognition = () => {
     try {
       const img1 = await loadImage(firstImage);
       const img2 = await loadImage(capturedImage);
-
+  
       const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
       const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
-
+  
       if (detections1 && detections2) {
         const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
-        setIsSamePerson(distance < 0.6);
+        console.log("Distance between faces:", distance);
+        setIsSamePerson(distance < 0.4);
       } else {
+        console.log("Face detection failed for one or both images.");
         setIsSamePerson(null);
       }
     } catch (error) {
-      console.error('Face comparison error:', error);
+      console.error("Face comparison error:", error);
       setIsSamePerson(null);
     }
-
     setDetectionDone(true);
   };
 
