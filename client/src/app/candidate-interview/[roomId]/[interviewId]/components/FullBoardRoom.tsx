@@ -391,7 +391,7 @@ useEffect(()=>{
 
   return (
     <>
-    <InterviewFocusGuard />
+    {/* <InterviewFocusGuard /> */}
     <div className="h-screen bg-background p-4">
     <div className="grid grid-cols-5 gap-4 h-full">
       {user.role === 'INTERVIEWER' && (

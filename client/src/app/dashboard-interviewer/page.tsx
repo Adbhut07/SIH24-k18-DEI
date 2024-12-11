@@ -12,8 +12,7 @@ import { PastInterviewsCard } from "@/components/interviewer/past-interviews-car
 import { FeedbackAndNotesSection } from "@/components/interviewer/feedback-and-notes-section";
 import ProfileCard from "@/components/interviewer/profile-card";
 import axios from "axios";
-import { get } from "axios";
-import { set } from "date-fns";
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -35,11 +34,21 @@ export default function DashboardPage() {
   const [userProfile,setUserProfile] = useState({})
 
 
+
   const getAllInterviews =  async ()=>{
 
+    try {
     const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/interviewer/getInterviews/${user.id}`,{withCredentials:true})
     console.log(response?.data?.data)
     setInterviews(response?.data?.data)
+
+    }
+    catch(error){
+      console.log(error)
+
+    }
+
+    
   }
 
   const getUserProfile = async ()=>{
@@ -47,7 +56,9 @@ export default function DashboardPage() {
     try{
 
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/${user.email}`,{withCredentials:true})
-      setUserProfile(response?.data?.data)
+      console.log(response?.data)
+      setUserProfile(response?.data)
+
 
     }
     catch(error){
@@ -60,10 +71,11 @@ export default function DashboardPage() {
 
  
   useEffect(()=>{
-
     getAllInterviews();
-    getUserProfile();
+  },[])
 
+  useEffect(()=>{
+    getUserProfile()
   },[])
 
   
@@ -79,12 +91,12 @@ export default function DashboardPage() {
 
           <ProfileCard
             name={user?.name || ""}
-            skills={userProfile?.skills || []}
+            skills={userProfile?.data?.skills || []}
             totalInterviews={150}
-            profilePicture={user?.image ||""}
+            profilePicture={userProfile?.data?.image ||""}
             status="Available"
             rating={4.8}
-            department={userProfile?.designation || ""}
+            department={userProfile?.data?.designation || ""}
           />
 
           <UpcomingInterviewsCard interviews = {interviews} />

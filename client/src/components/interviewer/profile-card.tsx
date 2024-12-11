@@ -53,7 +53,7 @@ export default function ProfileCard({
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2 mb-4">
-          {skills.map((skill, index) => (
+          {skills.slice(0,9).map((skill, index) => (
             <Badge key={index} variant="secondary">
               {skill}
             </Badge>

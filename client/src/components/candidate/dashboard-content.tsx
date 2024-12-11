@@ -1,133 +1,3 @@
-// 'use client'
-// import { Card, CardContent,CardBody, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Button } from "@/components/ui/button"
-// import { Progress } from "@/components/ui/progress"
-// import { Badge } from "@/components/ui/badge"
-// import { CalendarDays, Clock, FileText, PenTool, Lightbulb, Video, MapPin, Calendar, ChevronRight, Book } from 'lucide-react'
-// import { Input } from "@/components/ui/input"
-// import { useSelector } from "react-redux"
-// import axios from "axios"
-// import { useEffect, useState } from "react"
-// import { format } from 'date-fns';
-// import Link from "next/link"
-
-// export function DashboardContent() {
-
-//   const user = useSelector((state)=>state.user)
-
-
-
-
-
-
-
-
-//   return (
-//     <div className="container mx-auto p-6 space-y-6 ">
-//       <header>
-//         <h1 className="text-3xl font-bold ">Welcome back, {user.name} </h1>
-//         <p className="text-blue-700">Here's an overview of your progress</p>
-//       </header>
-
-     
-
-// <div className="space-y-4">
-// <div className=" text-xl ">Upcoming Interviews</div>
-//       {upcomingInterviews?.map((interview) => (
-//         <Card key={interview.id} className="overflow-hidden">
-          
-//           <CardHeader className="p-4">
-//             <div className="flex items-center justify-between">
-//               <div>
-//                 <CardTitle className="text-lg font-semibold">{interview?.title}</CardTitle>
-//                 <CardDescription className="flex items-center mt-1 text-sm text-muted-foreground">
-//                   <Book className="w-4 h-4 mr-1" />
-//                   {interview?.description}
-//                 </CardDescription>
-//               </div>
-              
-//               <div className="flex items-center text-sm text-muted-foreground">
-//                 <Calendar className="w-4 h-4 mr-1" />
-//                 <span>{format(new Date(interview?.scheduledAt), 'MMM dd, yyyy HH:mm')}</span>
-//               </div>
-
-              
-//               <Link href={`/interview2/${interview.roomId}`}>
-//               <Button variant="ghost" size="sm" className="ml-2 shrink-0">
-//               Join
-//               <ChevronRight className="w-4 h-4 ml-1" />
-//             </Button>
-//             </Link>
-//             </div>
-//           </CardHeader>
-       
-//         </Card>
-//       ))}
-//     </div>
-
-
-
-
-
-
-//       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <Card>
-//           <CardHeader>
-//             <CardTitle>Recent Interviews</CardTitle>
-//           </CardHeader>
-//           <CardContent className="space-y-4">
-//             {[
-//               { company: "TechCorp", position: "Frontend Developer", date: "2023-11-20", score: 8.5 },
-//               { company: "InnoSoft", position: "Full Stack Engineer", date: "2023-11-15", score: 7.8 },
-//               { company: "DataDynamics", position: "React Developer", date: "2023-11-10", score: 9.2 },
-//             ].map((interview, index) => (
-//               <div key={index} className="flex items-center justify-between">
-//                 <div>
-//                   <h3 className="font-semibold">{interview.position}</h3>
-//                   <p className="text-sm text-muted-foreground">{interview.company}</p>
-//                 </div>
-//                 <div className="flex items-center space-x-4 ">
-//                   <Badge className="bg-gray-800 text-white" variant={interview.score >= 8 ? "default" : "secondary"}>
-//                     Score: {interview.score}
-//                   </Badge>
-//                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
-//                   <span className="text-sm text-muted-foreground">{interview.date}</span>
-//                 </div>
-//               </div>
-//             ))}
-//           </CardContent>
-//         </Card>
-
-//         <Card>
-//           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-//             <CardTitle>Interview Tips</CardTitle>
-//             <Lightbulb className="h-5 w-5 text-yellow-500" />
-//           </CardHeader>
-//           <CardContent>
-//             <ul className="space-y-2 list-disc list-inside">
-//               <li>Research the company thoroughly before the interview</li>
-//               <li>Prepare specific examples to showcase your skills</li>
-//               <li>Practice common interview questions with a friend</li>
-//               <li>Dress professionally and arrive early</li>
-//               <li>Ask thoughtful questions about the role and company</li>
-//             </ul>
-//             <Button className="mt-4 w-full bg-gray-800 text-white" size="sm">View More Tips</Button>
-//           </CardContent>
-//         </Card>
-//       </section>
-
-//       <section>
-//         <h2 className="text-2xl font-bold mb-4">Skills Showcase</h2>
-//         <div className="flex flex-wrap gap-2">
-//           {["React", "TypeScript", "Node.js", "GraphQL", "Docker", "AWS"].map((skill) => (
-//             <Badge key={skill} variant="outline">{skill}</Badge>
-//           ))}
-//         </div>
-//       </section>
-//     </div>
-//   )
-// }
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -144,6 +14,7 @@ import Link from "next/link"
 import { ScrollArea } from "@radix-ui/react-scroll-area"
 import {AnimatePresence, motion} from 'motion/react'
 import { format } from "path"
+import {useRouter} from "next/navigation"
 
 export default function DashboardContent() {
   
@@ -151,6 +22,28 @@ export default function DashboardContent() {
 
 
   const [candidateInterviews,setCandidateInterviews] = useState([])
+  const [candidateSkills,setCandidateSkills] =  useState([])
+
+  const router = useRouter()
+
+  const fetchCandidateProfile = async ()=>{
+
+    try{
+
+      const response = await axios.get(`http://localhost:5454/api/v1/userProfile/${user.email}`,{withCredentials:true})
+
+     
+      console.log((response?.data?.data?.skills))
+      setCandidateSkills(response?.data?.data?.skills)
+
+  
+    }
+    catch(error){
+      console.log(error);
+
+    }
+    
+  }
 
   const fetchUpcomingInterviews = async()=>{
     try{
@@ -159,6 +52,7 @@ export default function DashboardContent() {
       })
       const interviews = response?.data?.interviews
       setCandidateInterviews(interviews)
+      console.log(response?.data?.interviews)
    
     
     }
@@ -169,7 +63,14 @@ export default function DashboardContent() {
 
   useEffect(()=>{
     fetchUpcomingInterviews()
+  
   },[])
+
+  useEffect(()=>{
+    fetchCandidateProfile()
+  },[])
+
+
 
   return (
     <div className="container ">
@@ -183,7 +84,7 @@ export default function DashboardContent() {
         </div>
         <InterviewTips />
         <CompletedInterviews candidateInterviews={candidateInterviews} />
-        <SkillAssessment />
+        <SkillAssessment candidateSkills={candidateSkills} />
         <Announcements />
         <Resources />
         <GoalsReminders />
@@ -300,7 +201,7 @@ export function UpcomingInterviews({ candidateInterviews }) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link href={`/candidate-interview/${interview.roomId}/${interview.id}`}>
+                        <Link href={`/detect-face/${interview.roomId}/${interview.id}`}>
                           <Button size="sm" variant="outline" className="text-xs">
                             <Video className="mr-2 h-3 w-3" />
                             Join Now
@@ -318,69 +219,6 @@ export function UpcomingInterviews({ candidateInterviews }) {
     </motion.div>
   )
 }
-
-// function TrackProgress() {
-//   const interviewData = [
-//     { name: "Jan", total: 5 },
-//     { name: "Feb", total: 8 },
-//     { name: "Mar", total: 12 },
-//     { name: "Apr", total: 10 },
-//     { name: "May", total: 15 },
-//     { name: "Jun", total: 18 },
-//   ]
-
-//   const successRateData = [
-//     { name: "Jan", rate: 60 },
-//     { name: "Feb", rate: 65 },
-//     { name: "Mar", rate: 70 },
-//     { name: "Apr", rate: 68 },
-//     { name: "May", rate: 72 },
-//     { name: "Jun", rate: 75 },
-//   ]
-
-//   return (
-//     <Card className="col-span-2">
-//       <CardHeader>
-//         <CardTitle>Track Your Progress</CardTitle>
-//       </CardHeader>
-//       <CardContent className="space-y-8">
-//         <div>
-//           <h4 className="text-sm font-medium mb-2">Interview Preparation</h4>
-//           <Progress value={75} className="h-2" />
-//           <p className="text-sm text-muted-foreground mt-2">75% complete</p>
-//         </div>
-//         <div>
-//           <h4 className="text-sm font-medium mb-2">Interviews per Month</h4>
-//           <ResponsiveContainer width="100%" height={200}>
-//             <BarChart data={interviewData}>
-//               <XAxis dataKey="name" />
-//               <YAxis />
-//               <Bar dataKey="total" fill="#3b82f6" />
-//             </BarChart>
-//           </ResponsiveContainer>
-//         </div>
-//         <div>
-//           <h4 className="text-sm font-medium mb-2">Success Rate Trend</h4>
-//           <ResponsiveContainer width="100%" height={200}>
-//             <LineChart data={successRateData}>
-//               <XAxis dataKey="name" />
-//               <YAxis />
-//               <Line type="monotone" dataKey="rate" stroke="#10b981" />
-//             </LineChart>
-//           </ResponsiveContainer>
-//         </div>
-//         <div className="flex justify-between text-sm">
-//           <span>Interviews Scheduled: 18</span>
-//           <span>Completed: 15</span>
-//           <span>Success Rate: 75%</span>
-//         </div>
-//         <Button variant="outline" className="w-full">
-//           View Detailed Analytics
-//         </Button>
-//       </CardContent>
-//     </Card>
-//   )
-// }
 
 function InterviewTips() {
   const tips = [
@@ -491,34 +329,39 @@ function CompletedInterviews({candidateInterviews}) {
   )
 }
 
-function SkillAssessment() {
-  const skills = [
-    { name: "JavaScript", score: 85 },
-    { name: "React", score: 90 },
-    { name: "Node.js", score: 75 },
-  ]
+function SkillAssessment({candidateSkills}) {
+  
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Skill Assessment</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-4">
-          {skills.map((skill, index) => (
-            <li key={index} className="flex items-center justify-between">
-              <span>{skill.name}</span>
-              <div className="flex items-center">
-                <span className="mr-2">{skill.score}%</span>
-                <Button size="sm" variant={skill.score >= 80 ? "outline" : "default"}>
-                  {skill.score >= 80 ? "Retake" : "Improve"}
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+    <Card className="w-full max-w-md mx-auto shadow-lg">
+    <CardContent className="p-6">
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Skills Assessment</h2>
+      <div className="space-y-4">
+        {candidateSkills.slice(0, 6).map((skill, index) => (
+          <motion.div
+            key={skill.name}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-700">{skill}</span>
+              
+            </div>
+            <Button
+              variant="outline"
+              onClick={()=>{router.push(`/assessment/${skill}`)}}
+              size="sm"
+              className="text-xs font-semibold bg-gray-800 text-white hover:bg-white hover:text-orange-500 transition-colors duration-300"
+            >
+              Take Assessment
+            </Button>
+          </motion.div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
   )
 }
 

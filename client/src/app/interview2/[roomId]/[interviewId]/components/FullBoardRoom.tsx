@@ -133,7 +133,7 @@ const fetchCandidateSkills = async ()=>{
   "id": [unique integer from 1 to 15],
   "question": [string containing the interview question],
   "topic": [string indicating the specific topic],
-  "relevance": ["high", "medium", or "low"],
+  "relevance": ["high", "medium", or "low"] How the question relates to the candidate's skills,
   "toughness": [integer between 1 and 5],
   "difficulty": ["easy", "intermediate", or "hard"],
   "category": [string representing a subfield],

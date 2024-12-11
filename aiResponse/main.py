@@ -1,12 +1,12 @@
 import os
 import json
 import traceback
-import cv2
+
 import httpx
 import fitz  
 import logging
 import numpy as np
-from ultralytics import YOLO
+# from ultralytics import YOLO
 import base64
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
@@ -143,7 +143,7 @@ async def evaluate_answer(question: str, candidate_skills: str, candidate_ans: s
         Candidate's Answer: {candidate_ans}
 
         Evaluation Criteria:
-        1. **Relevance**: Assess how well the answer relates to the question and the candidate's listed skills (out of 10).
+        1. **Relevance**: Assess how well question relates to the candidate's listed skills (out of 10).
         2. **Ideal Answer**: Provide the ideal answer for this question.
         3. **Topic**: Identify the topic the question belongs to.
         4. **Category**: Classify the question into a specific category (e.g., technical, behavioral, etc.).
