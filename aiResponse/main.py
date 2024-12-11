@@ -191,6 +191,61 @@ async def evaluate_answer(question: str, candidate_skills: str, candidate_ans: s
         }
 
 
+# Endpoint to evaluate  interview questions
+async def evaluate_answer(question: str, topics: str):
+    """Evaluate the candidate's answer using OpenRouter AI."""
+    try:
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": YOUR_APP_NAME,
+        }
+
+        prompt = f"""
+        Evaluate the following interview scenario:
+
+        Question: {question}
+        Topics: {topics}
+
+        Evaluation Criteria:
+        1. **Relevance**: Assess how well question relates to the  listed topics (out of 10).
+        2. **Ideal Answer**: Provide the ideal answer for this question.
+        3. **Topic**: Identify the topic the question belongs to.
+        4. **Category**: Classify the question into a specific category (e.g., technical, behavioral, etc.).
+        5. **Feedback**: Give constructive feedback for asking that questions if it's relevant to topics?
+        7. **Toughness**: Rate the question's difficulty level based on that topics(out of 10).
+
+       provide a proper json format for the above scenario
+        """
+
+        body = {
+            "model": "meta-llama/llama-3.2-3b-instruct:free",
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"},
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                json=body,
+                headers=headers,
+            )
+
+            response.raise_for_status()
+            result = response.json()
+
+            content = result["choices"][0]["message"]["content"]
+            return json.loads(content)
+
+    except Exception as e:
+        logger.error(f"Evaluation process failed: {e}")
+        return {
+            "error": "Evaluation process failed",
+            "exception": str(e),
+            "traceback": traceback.format_exc(),
+        }
+
+
 # WebSocket endpoint for real-time evaluation
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -217,6 +272,30 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close()
 
 
+@app.websocket("/ws-evaluate")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time interview question evaluation."""
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_json()
+            question = data.get("question")
+            topics = data.get("topics")
+
+            if not all([question, topics]):
+                await websocket.send_json({"error": "Missing required fields"})
+                continue
+
+            result = await evaluate_answer(question, topics)
+            await websocket.send_json(result)
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"Unexpected WebSocket error: {e}")
+        await websocket.close()
+
+
 @app.websocket("/detect-mobile")
 async def mobile_detection_endpoint(websocket: WebSocket):
     """
@@ -224,6 +303,7 @@ async def mobile_detection_endpoint(websocket: WebSocket):
     using object detection
     """
     await websocket.accept()
+    logger.info("WebSocket connection established")
     try:
         while True:
             # Receive base64 encoded image from frontend
@@ -267,6 +347,13 @@ async def mobile_detection_endpoint(websocket: WebSocket):
                 }
                 
                 await websocket.send_json(response)
+
+            except WebSocketDisconnect:
+                logger.info("WebSocket client disconnected")
+                break
+            except Exception as e:
+                logger.error(f"WebSocket processing error: {e}")
+                break
                 
             except Exception as e:
                 await websocket.send_json({

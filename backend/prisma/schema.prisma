@@ -44,6 +44,19 @@ model User {
   candidateProfile        CandidateProfile?
 }
 
+// model OTP {
+//   id        String   @id @default(uuid()) @db.Uuid
+//   email     String   
+//   otp       String
+//   expiresAt DateTime
+//   isVerified Boolean @default(false)
+//   createdAt DateTime @default(now())
+
+//   // Optional relation to User, if you want to link OTPs to users
+//   userId    String?  @db.Uuid
+//   user      User?    @relation(fields: [userId], references: [id])
+// }
+
 model CandidateProfile {
   id          String @id @default(uuid()) @db.Uuid
   candidateId String @unique @db.Uuid
@@ -101,6 +114,15 @@ model InterviewInterviewer {
   interviewer   User      @relation("InterviewerAssignments", fields: [interviewerId], references: [id])
 }
 
+model MockInterview {
+  id                String   @id @default(uuid()) @db.Uuid
+  jobId             String   
+  topics            String[] 
+  requiredExperience Int     
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
 
 model Room {
   id             String    @id @default(cuid()) 

@@ -1,5 +1,5 @@
 import express from "express";
-import { createInterviewSession, getAllInterviews, getInterviewById, updateInterviewSession, updateInterviewStatus } from "../controllers/interview/interview.controller";
+import { createInterviewSession, createMockInterview, getAllInterviews, getInterviewById, updateInterviewSession, updateInterviewStatus } from "../controllers/interview/interview.controller";
 import { authorize, protect } from "../utils/auth.middleware";
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.patch("/interview-update/:id", protect, authorize(['ADMIN']), updateInter
 router.put("/status/:id", updateInterviewStatus);
 router.get("/interviews",protect,authorize(['ADMIN']),getAllInterviews)
 router.get("/interviews/:id", getInterviewById)
+router.post("/createMockInterview", protect, authorize(['ADMIN']), createMockInterview);
 
 
 
