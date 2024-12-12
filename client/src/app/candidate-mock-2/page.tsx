@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Mic, MicOff, Video, VideoOff, Send, Volume2 } from 'lucide-react'
+<<<<<<< Updated upstream
+=======
+import useWebSocket from '@/hooks/useWebSocket'
+import { useAppSelector } from '@/lib/store/hooks'
+import { useParams } from 'next/navigation'
+>>>>>>> Stashed changes
 import OpenAI from 'openai'
 
 interface CandidateInfo {
@@ -52,6 +58,35 @@ export default function CandidateInterviewUI() {
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [suggestedQuestions, setSuggestedQuestions] = useState<Question[]>([]);
   const [isUsingMockQuestions, setIsUsingMockQuestions] = useState(true);
+
+
+   const { initializeWebSocket, getEvaluatedDataFromAI, isConnected, connectionError } = useWebSocket();
+  
+    useEffect(() => {
+      initializeWebSocket();
+    }, [initializeWebSocket]);
+  
+  
+    
+  
+    const user = useAppSelector((state)=>state.user)
+  
+    const {roomId,interviewId} = useParams();
+  
+  
+    const [currentQuestion, setCurrentQuestion] = useState(null)
+    const [totalMarks, setTotalMarks] = useState(0)
+    const [isAsking,setIsAsking] = useState(false);
+    const [currentMarks, setCurrentMarks] = useState('')
+    const [suggestedQuestions, setSuggestedQuestions] = useState([]);
+  
+    const [isSubmittingMarks, setIsSubmittingMarks] = useState(false)
+    const [isSubmittingEvaluation, setIsSubmittingEvaluation] = useState(false)
+    const [currentCandidateAnswer,setCurrentCandidateAnswer] = useState('')
+  
+    const [candidateEmail,setCandidateEmail] = useState('')
+    const [candidateSkills,setCandidateSkills] = useState([])
+  
 
   const candidateInfo: CandidateInfo = {
     name: "John Doe",
@@ -196,27 +231,7 @@ const handleLoadMoreQuestions = async () => {
     return Number(((matchedKeywords.length / keywords.length) * 10).toFixed(1));
   }
 
-  const generateFeedback = (relevancyScore: number, marks: number, questionId: number): string => {
-    const feedbacks = [
-      "Your answer demonstrates a good understanding of React concepts. Try to elaborate more on specific examples from your experience.",
-      "You've touched on some key points of state management. Consider discussing the trade-offs between different approaches.",
-      "Your explanation of server-side rendering is clear. It would be beneficial to mention specific use cases where SSR is advantageous.",
-      "You've listed some great optimization techniques. Try to explain how each technique specifically improves performance.",
-      "Your testing approach seems comprehensive. Consider discussing how you prioritize different types of tests in your workflow."
-    ];
-
-    let feedback = feedbacks[questionId - 1];
-
-    if (relevancyScore < 5) {
-      feedback += " Make sure to address all parts of the question in your response.";
-    } else if (marks < 7) {
-      feedback += " Your answer is on the right track, but try to provide more depth in your explanations.";
-    } else {
-      feedback += " Excellent job on this question!";
-    }
-
-    return feedback;
-  }
+ 
 
   const handleSubmitAnswer = () => {
     const currentQuestion = mockQuestions[currentQuestionIndex];
@@ -259,7 +274,93 @@ const handleLoadMoreQuestions = async () => {
     }
   }
 
+<<<<<<< Updated upstream
 //   console.log(suggestedQuestions);
+=======
+
+  
+  
+    const openai = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true
+    })
+  
+    
+    async function getSuggestedQuestions() {
+  
+      const skills = candidateSkills.join(', ');
+  
+      const prompt = `Generate a set of 15 interview questions related to ${skills} Format the response as a JSON array where each element is an object with the following structure:
+  {
+    "id": [unique integer from 1 to 15],
+    "question": [string containing the interview question],
+    "topic": [string indicating the specific topic],
+    "relevance": ["high", "medium", or "low"] How the question relates to the candidate's skills,
+    "toughness": [integer between 1 and 5],
+    "difficulty": ["easy", "intermediate", or "hard"],
+    "category": [string representing a subfield],
+    "ai_ans": [detailed AI-generated answer (3-5 sentences), with properly escaped characters]
+  }
+  `;
+  
+  try {
+    // Call OpenAI API to fetch suggested questions
+    const completion = await openai.chat.completions.create({
+      model: "meta-llama/llama-3.2-3b-instruct:free",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+  
+    let responseContent = completion?.choices?.[0]?.message?.content;
+  
+    // Check if content is received from the AI model
+    if (!responseContent) {
+      throw new Error("No content received from the AI model.");
+    }
+  
+    // Log the response to check for correctness
+    console.log("AI Response:", responseContent);
+  
+  
+    const firstIndex = String(responseContent).indexOf('[')
+    const secondIndex = String(responseContent).indexOf(']')
+    responseContent = responseContent.slice(firstIndex,secondIndex+1)
+  
+    // Attempt to parse the response content into JSON
+    try {
+      const parsedQuestions = JSON.parse(responseContent);
+  
+      // Check if the parsed data is an array and contains the expected structure
+      if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
+        console.log("Parsed Questions:", parsedQuestions);
+        // Optionally update state or perform further actions with the parsed questions
+        setSuggestedQuestions(parsedQuestions);
+      } else {
+        console.warn("Parsed content is not in the expected array format or is empty.");
+      }
+    } catch (jsonError) {
+      console.error("Error parsing JSON response:", jsonError.message);
+    }
+  
+  } catch (error: any) {
+    console.error("Error in getSuggestedQuestions:", error.message);
+  }
+    }
+
+
+
+
+  useEffect(()=>{
+    if (candidateSkills.length>0){
+      getSuggestedQuestions()
+    }
+  },[candidateSkills])
+>>>>>>> Stashed changes
 
   return (
     <div className="container mx-auto p-6 flex gap-6 min-h-screen bg-gray-50">

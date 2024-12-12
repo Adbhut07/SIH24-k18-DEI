@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from 'next/link'
 import toast, { Toaster } from 'react-hot-toast';
-import {Trash2 } from "lucide-react";
+import {Trash2, Upload } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -41,6 +41,13 @@ export function UserManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+
+  const [userId,setUserId] = useState('')
+  const [newUserDetails,setNewUserDetails] = useState({})
+
+
+
+
 
 
   // Function to fetch all users
@@ -98,6 +105,43 @@ export function UserManagement() {
     setNewUser((prev) => ({ ...prev, [id]: value }));
   };
 
+
+  
+
+  const handleCreateProfile = async ()=>{
+    try {
+
+
+      let userData = {
+        
+          candidateId: newUserDetails?.id,
+          name:newUserDetails?.name,
+          designation: "",
+          age: 18,
+          location: "",
+          email: newUserDetails?.email,
+          summary: "",
+          tenthMarks: "",
+          twelfthMarks: "",
+          gateScore: "",
+          jeeScore: "",
+          experience: "",
+          education: "",
+          skills: [],
+          achievements: []
+        
+      }
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/userProfile/createCandidateProfile`, userData)
+      console.log(response)
+      toast.success('Profile created')
+
+    }
+    catch(error){
+      console.log(error.data)
+      toast.error('Error creating profile')
+    }
+  }
+
   // Add new user
   const handleAddUser = async () => {
     try {
@@ -127,6 +171,13 @@ export function UserManagement() {
       const addedUser = response.data.data
       setUsers((prev) => [...prev, addedUser]); // Update users state
 
+
+      setNewUserDetails({id:addedUser.id,email:newUser.email,name:newUser.name})
+     
+
+
+
+
       setNewUser({ name: "", email: "",password:"", role: "" }); // Clear form
       toast.success(response.data.message)
       setIsLoading(false);
@@ -154,6 +205,13 @@ export function UserManagement() {
       toast.error('Failed to delete user');
     } 
   };
+
+
+  useEffect(()=>{
+    if (newUserDetails && newUserDetails.id && newUserDetails.email && newUserDetails.name){
+      handleCreateProfile();
+    }
+  },[newUserDetails])
 
 
   return (
@@ -252,6 +310,7 @@ export function UserManagement() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Upload/Update Resume</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -261,9 +320,10 @@ export function UserManagement() {
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
+                  <TableCell> <Link href={`/uploadresume/${user.id}/${user.email}`}> <Upload></Upload></Link> </TableCell>
                   <TableCell>
                     {
-                      (user.role !=='ADMIN') && <Trash2 className="ml-3 cursor-pointer " onClick={()=>{handleDeleteUser(user.id)}} />
+                      (user.role !=='ADMIN') && <Trash2 className=" cursor-pointer " onClick={()=>{handleDeleteUser(user.id)}} />
                     }
                     
                   </TableCell>
