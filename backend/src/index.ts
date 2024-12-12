@@ -15,6 +15,7 @@ import agoraRoomRoutes from './routes/agoraRoom.route';
 import evaluationRoutes from './routes/evaluation.route';
 import interviewerRoutes from './routes/interviewer.route';
 import reportRoutes from './routes/report.route';
+import mockInterviewRoutes from './routes/mockInterview.route';
 
 import initializeSocket from './socket/socket';
 
@@ -45,6 +46,7 @@ app.use('/api/v1/agoraRoom', agoraRoomRoutes);
 app.use('/api/v1/evaluation', evaluationRoutes);
 app.use('/api/v1/interviewer', interviewerRoutes);
 app.use('/api/v1/report', reportRoutes);
+app.use('/api/v1/mockInterview', mockInterviewRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, world!');

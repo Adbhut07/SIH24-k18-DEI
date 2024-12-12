@@ -12,5 +12,4 @@ router.patch("/interview-update/:id", auth_middleware_1.protect, (0, auth_middle
 router.put("/status/:id", interview_controller_1.updateInterviewStatus);
 router.get("/interviews", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.getAllInterviews);
 router.get("/interviews/:id", interview_controller_1.getInterviewById);
-router.post("/createMockInterview", auth_middleware_1.protect, (0, auth_middleware_1.authorize)(['ADMIN']), interview_controller_1.createMockInterview);
 exports.default = router;
