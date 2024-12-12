@@ -175,7 +175,7 @@ export default function CandidateInterviewUI() {
               className="w-full mb-4"
               rows={6}
             />
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col space-y-2 items-center">
               <Button onClick={toggleRecording} variant={isRecording ? "destructive" : "default"} size="sm" disabled={!!mediaError}>
                 {isRecording ? <Volume2 className="mr-2 h-4 w-4" /> : <Mic className="mr-2 h-4 w-4" />}
                 {isRecording ? "Stop" : "Start Answering"}

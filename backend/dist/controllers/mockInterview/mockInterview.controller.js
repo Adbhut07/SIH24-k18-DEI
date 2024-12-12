@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMockInterviewById = exports.deleteMockInterview = exports.getAllMockInterviews = exports.createMockInterview = exports.mockInterviewSchema = void 0;
+exports.getAllMockInterviewsTitle = exports.getMockInterviewById = exports.deleteMockInterview = exports.getAllMockInterviews = exports.createMockInterview = exports.mockInterviewSchema = void 0;
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 const prisma = new client_1.PrismaClient();
@@ -18,20 +18,13 @@ exports.mockInterviewSchema = zod_1.z.object({
     topics: zod_1.z.array(zod_1.z.string()).nonempty("Topics array cannot be empty"),
     title: zod_1.z.string().nonempty("Title is required"),
     description: zod_1.z.string().optional(),
-    requiredExperience: zod_1.z.number().min(0, "Required experience must be a positive number"),
+    requiredExperience: zod_1.z.number().int().min(0, "Required experience must be a positive number"),
 });
 const createMockInterview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { jobId, topics, title, description, requiredExperience } = req.body;
     try {
-        const validatedData = exports.mockInterviewSchema.parse({ jobId, topics, title, description, requiredExperience });
+        const validatedData = exports.mockInterviewSchema.parse(req.body); // Parse entire body
         const mockInterview = yield prisma.mockInterview.create({
-            data: {
-                jobId: validatedData.jobId,
-                topics: validatedData.topics,
-                title: validatedData.title,
-                description: validatedData.description,
-                requiredExperience: validatedData.requiredExperience
-            },
+            data: validatedData, // Use spread of validated data directly
         });
         return res.status(201).json({
             success: true,
@@ -125,3 +118,29 @@ const getMockInterviewById = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getMockInterviewById = getMockInterviewById;
+//create a controller function for getting all mock interviews title and id
+const getAllMockInterviewsTitle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("ho");
+        const mockInterviews = yield prisma.mockInterview.findMany({
+            select: {
+                id: true,
+                title: true,
+            },
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Mock interviews retrieved successfully",
+            data: { mockInterviews },
+        });
+    }
+    catch (error) {
+        console.error("Error fetching mock interviews:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message || "An unexpected error occurred",
+        });
+    }
+});
+exports.getAllMockInterviewsTitle = getAllMockInterviewsTitle;

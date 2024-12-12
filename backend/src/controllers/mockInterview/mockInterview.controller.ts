@@ -9,23 +9,17 @@ export const mockInterviewSchema = z.object({
     topics: z.array(z.string()).nonempty("Topics array cannot be empty"),
     title: z.string().nonempty("Title is required"),
     description: z.string().optional(),
-    requiredExperience: z.number().min(0, "Required experience must be a positive number"),
+    requiredExperience: z.number().int().min(0, "Required experience must be a positive number"),
   });
   
   export const createMockInterview = async (req: Request, res: Response): Promise<any> => {
-    const { jobId, topics, title, description, requiredExperience } = req.body;
   
     try {
-      const validatedData = mockInterviewSchema.parse({ jobId, topics, title, description, requiredExperience });
-      const mockInterview = await prisma.mockInterview.create({
-        data: {
-          jobId: validatedData.jobId,
-          topics: validatedData.topics,
-          title: validatedData.title,
-          description: validatedData.description,
-          requiredExperience: validatedData.requiredExperience
-        },
-      });
+        const validatedData = mockInterviewSchema.parse(req.body); // Parse entire body
+      
+        const mockInterview = await prisma.mockInterview.create({
+          data: validatedData, // Use spread of validated data directly
+        });
   
       return res.status(201).json({
         success: true,
@@ -125,3 +119,31 @@ export const getMockInterviewById = async (req: Request, res: Response): Promise
       });
     }
   };
+
+
+//create a controller function for getting all mock interviews title and id
+export const getAllMockInterviewsTitle = async (req: Request, res: Response): Promise<any> => {
+    try {
+        console.log("ho")
+      const mockInterviews = await prisma.mockInterview.findMany({
+        select: {
+          id: true,
+          title: true,
+        },
+      });
+  
+      return res.status(200).json({
+        success: true,
+        message: "Mock interviews retrieved successfully",
+        data: { mockInterviews },
+      });
+    } catch (error: any) {
+      console.error("Error fetching mock interviews:", error);
+  
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message || "An unexpected error occurred",
+      });
+    }    
+}

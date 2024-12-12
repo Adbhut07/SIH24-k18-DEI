@@ -12,6 +12,7 @@ import { PastInterviewsCard } from "@/components/interviewer/past-interviews-car
 import { FeedbackAndNotesSection } from "@/components/interviewer/feedback-and-notes-section";
 import ProfileCard from "@/components/interviewer/profile-card";
 import axios from "axios";
+import MockInterview from "@/components/interviewer/mock-interview";
 
 
 export default function DashboardPage() {
@@ -67,6 +68,25 @@ export default function DashboardPage() {
 
   }
 
+  const [mockInterviews,setMockInterviews] = useState([])
+  const getMockInterviews = async ()=>{
+
+    try{
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1/mockInterview/getAll`,{withCredentials:true})
+      console.log(response?.data)
+      console.log(response?.data?.data?.mockInterviews)
+      setMockInterviews(response?.data?.data?.mockInterviews)
+
+    }
+    catch(error){
+      console.log(error)
+    }
+
+  }
+
+
+
+
 
 
  
@@ -76,6 +96,10 @@ export default function DashboardPage() {
 
   useEffect(()=>{
     getUserProfile()
+  },[])
+
+  useEffect(()=>{
+    getMockInterviews()
   },[])
 
   
@@ -99,7 +123,8 @@ export default function DashboardPage() {
             department={userProfile?.data?.designation || ""}
           />
 
-          <UpcomingInterviewsCard interviews = {interviews} />
+          {/* <UpcomingInterviewsCard interviews = {interviews} /> */}
+          <MockInterview interviews={mockInterviews} />
 
         </div>
         <PastInterviewsCard interviews = {interviews} />
