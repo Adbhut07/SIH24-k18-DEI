@@ -27,6 +27,7 @@ import { JobCard } from "./components/card";
 interface WebSocketMessage {
   question: string;
   topics: string;
+  role: string | null;
 }
 
 interface WebSocketResponse {
@@ -140,7 +141,7 @@ export default function InterviewEvaluationChat() {
       return;
     }
 
-    if (!question.trim() || !topics.trim()) {
+    if (!question.trim() || !topics.trim() || !selectedRole?.trim()) {
       setConnectionError("Please fill in all fields");
       return;
     }
@@ -148,6 +149,7 @@ export default function InterviewEvaluationChat() {
     const payload: WebSocketMessage = {
       question: question,
       topics: topics,
+      role: selectedRole
     };
 
     setAskedQuestions(prev => [...prev, question])
@@ -161,7 +163,7 @@ export default function InterviewEvaluationChat() {
       console.error("Error sending WebSocket message:", error);
       setConnectionError("Failed to send message");
     }
-  }, [question, topics]);
+  }, [question, topics, selectedRole]);
 
   useEffect(() => {
 
@@ -181,6 +183,7 @@ export default function InterviewEvaluationChat() {
 
       setMockInterview(response?.data?.data?.mockInterview)
       setTopics(response?.data?.data?.mockInterview?.topics.join(','))
+      setSelectedRole(response?.data?.data?.mockInterview?.title)
 
     } 
     catch(error){

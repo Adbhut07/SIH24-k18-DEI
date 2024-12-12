@@ -1,7 +1,7 @@
 import os
 import json
 import traceback
-
+import json
 import httpx
 import fitz  
 import logging
@@ -191,9 +191,8 @@ async def evaluate_answer(question: str, candidate_skills: str, candidate_ans: s
         }
 
 
-# Endpoint to evaluate  interview questions
-async def evaluate_question(question: str, topics: str):
-    """Evaluate the candidate's answer using OpenRouter AI."""
+async def evaluate_relevance(question: str, topics: str, role: str):
+    """Evaluate the relevance of the question against the topics and role."""
     try:
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -202,38 +201,22 @@ async def evaluate_question(question: str, topics: str):
         }
 
         prompt = f"""
-Evaluate the following interview scenario:
+Assess the relevance of the following interview question in the context of the provided topics and role:
 
 Question: {question}
 Topics: {topics}
+Role: {role}
 
-Provide a comprehensive evaluation in CSV format using a pipe (`|`) as the separator with the following columns:
-relevance|ideal_answer|topic|category|feedback|toughness|suggestions_for_improvement
+Provide a JSON response with:
+- relevance_score: An integer between 1 and 10
+- explanation: A brief explanation of the question's relevance
 
-Instructions:
-- Relevance: Rate alignment with topics (1-10 integer), only numbers (1-10), no quotes.
-- Ideal Answer: Concise, clear response without line breaks or quotes.
-- Topic: A single subject area (e.g., Electrical Engineering).
-- Category: One of these values: technical, behavioral, situational.
-- Feedback: Short and constructive, no quotes.
-- Toughness: Difficulty rating (1-10 integer), only numbers (1-10), no quotes.
-- Suggestions: Short improvement suggestion, no quotes.
-
-Formatting Guidelines:
-- Use `|` to separate fields.
-- Ensure no field contains `|` or line breaks.
-- Do not wrap any values in double quotes or include stray punctuation.
-- Example of expected format:
-  9|Current equals voltage divided by resistance|Electrical Engineering|Technical|Clear but could include practical examples|6|Add practical examples
-
-Generate the response strictly in this format:
-<relevance>|<ideal_answer>|<topic>|<category>|<feedback>|<toughness>|<suggestions_for_improvement>
+Strictly follow this JSON format:
+{{
+  "relevance_score": 7,
+  "explanation": "The question is highly relevant to Backend Development as it discusses core concepts such as API design and microservices architecture."
+}}
 """
-
-
-
-
-
 
         body = {
             "model": "meta-llama/llama-3.2-3b-instruct:free",
@@ -247,15 +230,121 @@ Generate the response strictly in this format:
                 json=body,
                 headers=headers,
             )
-
+            response.raise_for_status()
+            result = response.json()
             
+            # Extract the content of the AI's response
+            content = result["choices"][0]["message"]["content"]
+            logger.info(f"Received content: {content}")
 
+            # Robust JSON parsing
+            try:
+                # Remove any leading/trailing whitespace and potential code block formatting
+                content = content.strip('`').strip()
+                
+                # Parse the JSON content
+                parsed_content = json.loads(content)
+                
+                # Validate the parsed content
+                if not isinstance(parsed_content, dict):
+                    raise ValueError("Parsed content is not a dictionary")
+                
+                # Ensure required keys exist
+                if "relevance_score" not in parsed_content or "explanation" not in parsed_content:
+                    raise KeyError("Missing required JSON keys")
+                
+                return parsed_content
+
+            except (json.JSONDecodeError, ValueError, KeyError) as parse_error:
+                logger.error(f"JSON parsing error: {parse_error}")
+                logger.error(f"Problematic content: {content}")
+                return {
+                    "error": "Failed to parse relevance result",
+                    "raw_content": content,
+                    "exception": str(parse_error)
+                }
+
+    except Exception as e:
+        logger.error(f"Relevance evaluation failed: {e}")
+        return {
+            "error": "Relevance evaluation failed",
+            "exception": str(e),
+            "traceback": traceback.format_exc(),
+        }
+
+async def evaluate_question(question: str, topics: str, role: str):
+    """Evaluate the candidate's answer using OpenRouter AI, separating relevance evaluation."""
+    try:
+        # First, evaluate relevance
+        relevance_result = await evaluate_relevance(question, topics, role)
+        
+        # Check if relevance score is low or invalid
+        if relevance_result.get("relevance_score", 0) <= 3:
+            return f"Evaluation aborted: The question is irrelevant. {relevance_result}"
+
+        # Proceed with full question evaluation if relevance is satisfactory
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": YOUR_APP_NAME,
+        }
+
+        prompt = f"""
+Evaluate the following interview scenario:
+
+Question: {question}
+Topics: {topics}
+Role: {role}
+
+Instructions:
+1. Evaluate the question's relevance against the provided topics and the role, considering the relevance score.
+2. If relevance is high, evaluate the ideal answer, related topics, category, and feedback.
+3. If the question is irrelevant, provide constructive feedback and suggest focusing on relevant areas.
+
+Format the response like this:
+{
+  "ideal_answer": "The ideal answer to the question.",
+  "category": "The category of the answer (e.g., Technical, HR, etc.)",
+  "feedback": "Constructive feedback for the candidate's answer.",
+  "toughness": "A subjective score indicating the question's toughness (1-10).",
+  "suggestion": "Suggestions for further improvement."
+}
+
+Example:
+{
+  "ideal_answer": "An API (Application Programming Interface) is a set of defined rules that enables different software systems to communicate with each other, allowing data exchange and integration.",
+  "category": "Technical",
+  "feedback": "The answer should cover key API concepts and their application in microservices.",
+  "toughness": 7,
+  "suggestion": "Consider adding examples of API use in real-world backend systems."
+}
+"""
+
+        body = {
+            "model": "meta-llama/llama-3.2-3b-instruct:free",
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"},
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                json=body,
+                headers=headers,
+            )
             response.raise_for_status()
             result = response.json()
             
             content = result["choices"][0]["message"]["content"]
-            print(content)
-            return content
+            print("OpenRouter response:", content)
+
+            # Parse the JSON result
+            try:
+                parsed_content = eval(content)  # Be careful with eval, it's used here for example purposes
+                return parsed_content
+            except Exception as e:
+                logger.error(f"Failed to parse question evaluation result: {e}")
+                return {"error": "Failed to parse question evaluation result", "exception": str(e)}
 
     except Exception as e:
         logger.error(f"Evaluation process failed: {e}")
@@ -264,8 +353,6 @@ Generate the response strictly in this format:
             "exception": str(e),
             "traceback": traceback.format_exc(),
         }
-
-
 # WebSocket endpoint for real-time evaluation
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -294,27 +381,26 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.websocket("/ws-evaluate")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time interview question evaluation."""
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_json()
             question = data.get("question")
             topics = data.get("topics")
+            role = data.get("role")
 
-            print(question, topics)
+            print(f"Received data: question={question}, topics={topics}, role={role}")
 
-            if not all([question, topics]):
+            if not all([question, topics, role]):
                 await websocket.send_json({"error": "Missing required fields"})
                 continue
 
-            result = await evaluate_question(question, topics)
+            result = await evaluate_relevance(question, topics, role)
+            print(f"Evaluation result: {result}")
             await websocket.send_json(result)
 
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected")
     except Exception as e:
-        logger.error(f"Unexpected WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}", exc_info=True)
         await websocket.close()
 
 
