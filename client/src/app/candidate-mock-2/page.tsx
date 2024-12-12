@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Mic, MicOff, Video, VideoOff, Send, Volume2 } from 'lucide-react'
+import OpenAI from 'openai'
 
 interface CandidateInfo {
   name: string;
@@ -13,18 +14,23 @@ interface CandidateInfo {
 }
 
 interface Question {
-  id: number;
-  text: string;
-  keywords: string[];
-}
+    id: number;
+    text: string;
+    keywords: string[];
+    topic?: string;
+    relevance?: string;
+    toughness?: number;
+    difficulty?: string;
+    category?: string;
+  }
 
-interface Answer {
-  questionId: number;
-  text: string;
-  relevancyScore: number;
-  marks: number;
-  feedback: string;
-}
+  interface Answer {
+    questionId: number;
+    text: string;
+    relevancyScore: number;
+    marks: number;
+    feedback: string;
+  }
 
 const mockQuestions: Question[] = [
   { id: 1, text: "Can you describe your experience with React?", keywords: ["components", "state", "props", "hooks", "virtual DOM"] },
@@ -44,6 +50,8 @@ export default function CandidateInterviewUI() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<Question[]>([]);
+  const [isUsingMockQuestions, setIsUsingMockQuestions] = useState(true);
 
   const candidateInfo: CandidateInfo = {
     name: "John Doe",
@@ -85,6 +93,97 @@ export default function CandidateInterviewUI() {
       }
     }
   }
+
+  const openai = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true
+});
+
+async function getSuggestedQuestions(topics: string[], loadMore = false) {
+    // Join topics into a comma-separated string
+    const topicsList = topics.join(', ');
+
+    // Modify the number of questions based on loadMore
+    const questionCount = loadMore ? 25 : 25;
+
+    // Construct the prompt dynamically
+    const prompt = `Generate ${questionCount} interview questions related to the topics: ${topicsList}. Ensure the questions are ordered by toughness, starting from the easiest to the hardest. Format the response as a JSON array where each element is an object with the following structure:
+{
+  "id": [unique integer starting from 1],
+  "text": [string containing the interview question],
+  "topic": [string indicating the specific topic],
+  "keywords": [array of relevant keywords],
+  "relevance": ["high", "medium", or "low"],
+  "toughness": [integer between 1 and 5, where 1 is the easiest and 5 is the hardest],
+  "difficulty": ["easy", "intermediate", or "hard"],
+  "category": [string representing a subfield of the topic]
+}
+
+The questions must align closely with the given topics.`;
+
+    try {
+        const completion = await openai.chat.completions.create({
+            model: "meta-llama/llama-3.2-3b-instruct:free",
+            messages: [
+                {
+                    role: "user",
+                    content: prompt,
+                },
+            ],
+        });
+
+        let responseContent = completion?.choices?.[0]?.message?.content;
+
+        if (!responseContent) {
+            throw new Error("No content received from the AI model.");
+        }
+
+        console.log("AI Response:", responseContent);
+
+        // Extract JSON array from the response
+        const firstIndex = String(responseContent).indexOf('[');
+        const secondIndex = String(responseContent).lastIndexOf(']');
+        responseContent = responseContent.slice(firstIndex, secondIndex + 1);
+
+        try {
+            const parsedQuestions = JSON.parse(responseContent);
+
+            console.log("Parsed Questions:", parsedQuestions);
+    
+            if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
+              if (loadMore) {
+                setSuggestedQuestions(prevQuestions => [...prevQuestions, ...parsedQuestions]);
+              } else {
+                setSuggestedQuestions(parsedQuestions);
+                setIsUsingMockQuestions(false);
+              }
+            } else {
+              console.warn("Parsed content is not in the expected array format or is empty.");
+            }
+          } catch (jsonError) {
+            console.error("Error parsing JSON response:", jsonError);
+          }
+    } catch (error) {
+        console.error("Error in getSuggestedQuestions:", error);
+      }
+}
+
+const handleFetchQuestions = async () => {
+    const topics = ["Data Structures", "Algorithms", "React", "System Design"];
+    await getSuggestedQuestions(topics); // Fetches questions based on the provided topics
+};
+
+useEffect(() => {
+    handleFetchQuestions();
+    console.log(suggestedQuestions);
+}, []);
+
+const handleLoadMoreQuestions = async () => {
+    const topics = ["React", "Performance Optimization", "Testing"];
+    await getSuggestedQuestions(topics, true); // Fetches more questions and appends to the list
+  };
+
 
   const handleNextQuestion = () => {
     setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % mockQuestions.length);
@@ -159,6 +258,8 @@ export default function CandidateInterviewUI() {
       }
     }
   }
+
+//   console.log(suggestedQuestions);
 
   return (
     <div className="container mx-auto p-6 flex gap-6 min-h-screen bg-gray-50">
