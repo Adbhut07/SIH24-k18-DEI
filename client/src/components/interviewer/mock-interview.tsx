@@ -42,7 +42,7 @@ export default function MockInterview ({interviews}) {
   return (
     <Card id='upcoming' className="w-full ">
       <CardHeader>
-        <CardTitle>Upcoming Interviews</CardTitle>
+        <CardTitle>Upcoming Mock Interviews</CardTitle>
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input

@@ -107,29 +107,34 @@ export const updateUser = async (req: Request, res: Response):Promise<any> => {
 };
 
 
-export const deleteUser = async (req: Request, res: Response):Promise<any> => {
+export const deleteUser = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
-    const existingUser = await prisma.user.findUnique({ where: { id } });
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+      include: { candidateProfile: true }, // Include related data
+    });
+
     if (!existingUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // Delete candidateProfile if it exists
+    if (existingUser.candidateProfile) {
+      await prisma.candidateProfile.delete({ where: { candidateId: id } });
+    }
+
+    // Now delete the user
     await prisma.user.delete({ where: { id } });
 
-    return res.status(200).json({
-      success: true,
-      message: "User deleted successfully",
-    });
+    return res.status(200).json({ success: true, message: "User deleted successfully" });
   } catch (error) {
     console.error("Error in deleteUser:", error);
     return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 const getAllUsersQuerySchema = zod.object({
   role: zod.enum(["CANDIDATE", "INTERVIEWER", "ADMIN"]).optional(), 

@@ -112,18 +112,20 @@ exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const existingUser = yield prisma.user.findUnique({ where: { id } });
-        if (!existingUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-        yield prisma.user.delete({ where: { id } });
-        return res.status(200).json({
-            success: true,
-            message: "User deleted successfully",
+        const existingUser = yield prisma.user.findUnique({
+            where: { id },
+            include: { candidateProfile: true }, // Include related data
         });
+        if (!existingUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        // Delete candidateProfile if it exists
+        if (existingUser.candidateProfile) {
+            yield prisma.candidateProfile.delete({ where: { candidateId: id } });
+        }
+        // Now delete the user
+        yield prisma.user.delete({ where: { id } });
+        return res.status(200).json({ success: true, message: "User deleted successfully" });
     }
     catch (error) {
         console.error("Error in deleteUser:", error);

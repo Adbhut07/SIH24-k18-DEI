@@ -477,6 +477,7 @@ export function MainContent() {
         .from('sih-profile') // Replace with your storage bucket name
         .upload(`${user.id}/${fileName}`, file);
 
+        console.log("hiiii",data)
       if (error) throw error;
 
       // Get the public URL of the uploaded file

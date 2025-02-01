@@ -4,7 +4,7 @@ import { protect, authorize } from '../utils/auth.middleware';
 
 const router: Router = express.Router();
 
-router.post('/createUser', protect, authorize(['ADMIN']), createUser);
+router.post('/createUser', createUser);
 router.put('/:id', protect, authorize(['ADMIN']), updateUser);
 router.delete('/:id', protect, authorize(['ADMIN']), deleteUser);
 router.get('/getAllUsers', protect, authorize(['ADMIN','INTERVIEWER']), getAllUsers);

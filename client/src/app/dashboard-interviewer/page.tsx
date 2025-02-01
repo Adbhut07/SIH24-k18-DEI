@@ -123,7 +123,7 @@ export default function DashboardPage() {
             department={userProfile?.data?.designation || ""}
           />
 
-          {/* <UpcomingInterviewsCard interviews = {interviews} /> */}
+          <UpcomingInterviewsCard interviews = {interviews} />
           <MockInterview interviews={mockInterviews} />
 
         </div>
