@@ -1,5 +1,5 @@
-import { Navbar } from "@/components/navbar"
-import { Sidebar } from "@/components/sidebar"
+import { Navbar } from "@/components/admin/Navbar" 
+import { Sidebar } from "@/components/admin/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"

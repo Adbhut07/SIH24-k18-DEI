@@ -45,8 +45,11 @@ const Assessment = () =>{
               if (!responseContent) {
                 throw new Error("No content received from the AI model.");
               }
+           } catch (error) {
+               console.error("Error generating questions:", error);
            }
         }
+        
 
 
 
