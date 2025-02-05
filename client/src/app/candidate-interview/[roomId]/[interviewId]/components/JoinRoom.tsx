@@ -13,7 +13,7 @@ import toast from 'react-hot-toast'
 import { useParams } from 'next/navigation'
 
 type JoinRoomProps = {
-  onJoin: (channel: string, token: string,appId:string,uId:Number) => void
+  onJoin: (channel: string, token: string,appId:string,uId:number) => void
   isError: boolean
   setIsError: Dispatch<SetStateAction<boolean>>
   isLoading: boolean

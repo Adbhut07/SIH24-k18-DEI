@@ -165,7 +165,7 @@ const handleRemoveInterviewer = (value)=>{
 
 }
 
-const getDateinIso = (date:Date,time:String)=>{
+const getDateinIso = (date:Date,time:string)=>{
   const [hours, minutes] = time.split(":").map(Number);
  const date_ = new Date(date)
  date_.setHours(hours,minutes,0,0)
@@ -184,7 +184,7 @@ const handleSelectRoom = (value)=>{
 
 const createEvaluation = async(obj)=>{
   try{
-    let data = {
+    const data = {
       interviewId:obj?.data?.interview?.id
     }
 
@@ -206,7 +206,7 @@ const handleScheduleSubmit = async ()=>{
 
   const isoDate  = getDateinIso(date,time)
 
-  let selectedInterviewersId = [];
+  const selectedInterviewersId = [];
   for (let i = 0; i<selectedInterviewers.length; i++){
     selectedInterviewersId.push(selectedInterviewers[i].id)
   }

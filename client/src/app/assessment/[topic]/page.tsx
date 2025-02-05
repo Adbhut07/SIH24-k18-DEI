@@ -20,7 +20,7 @@ const Assessment = () =>{
 
       const prompt = `Generate 15 questions related to ${topic} in a comma separted values`
 
-      const [questions, setQuestions] = React.useState([])
+      const [questions, setQuestions] = React.useState<string[]>([])
 
         const handleGenerateQuestions = async () => {
            try{

@@ -30,7 +30,7 @@ export default function Details(){
     const [isError, setIsError] = useState<boolean>(false);
     const [channel,setChannel] = useState("")
     const [appId,setAppId] = useState('')
-    const [uid,setUid] = useState<Number>(123)
+    const [uid,setUid] = useState<number>(123)
   
     const leaveChannel = () => setIsJoining(false);
 
@@ -47,7 +47,7 @@ export default function Details(){
       isJoining
     );
   
-    const onJoin = (channelToJoin: string, tokenToJoin: string, appIdToJoin:string, uidToJoin:Number) => {
+    const onJoin = (channelToJoin: string, tokenToJoin: string, appIdToJoin:string, uidToJoin:number) => {
       setChannel(channelToJoin);
       setToken(tokenToJoin);
       setAppId(appIdToJoin)

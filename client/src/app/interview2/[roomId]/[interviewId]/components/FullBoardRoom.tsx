@@ -275,7 +275,7 @@ useEffect(()=>{
     const response = await getEvaluatedDataFromAI(data);
     console.log("Evaluation Result:", response);
 
-    let currentEvaluation = {...response,question:currentQuestion?.question,candidate_ans:currentCandidateAnswer || "not answered",marks_given_by_interviewers: [
+    const currentEvaluation = {...response,question:currentQuestion?.question,candidate_ans:currentCandidateAnswer || "not answered",marks_given_by_interviewers: [
       {
         interviewerId: user.id,
         score: Number(currentMarks),
@@ -341,7 +341,7 @@ useEffect(()=>{
     setIsRecording(false)
         SpeechRecognition.stopListening()
 
-        let askedQuestion = {
+        const askedQuestion = {
           
             id: uuid(),
             question: transcript,

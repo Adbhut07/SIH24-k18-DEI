@@ -103,7 +103,7 @@ export default function ResumeUploadPage() {
 
 
   const handleExtractedSkills = async()=>{
-    let formData = {
+    const formData = {
       skills: skills
     }
 

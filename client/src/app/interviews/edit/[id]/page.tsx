@@ -34,7 +34,7 @@ const EditInterview = () => {
   const [date,setDate] = useState<Date | undefined>(undefined)
 
 
-  const getDateinIso = (date:Date,time:String)=>{
+  const getDateinIso = (date:Date,time:string)=>{
     const [hours, minutes] = time.split(":").map(Number);
    const date_ = new Date(date)
    date_.setHours(hours,minutes,0,0)

@@ -112,7 +112,7 @@ export function UserManagement() {
     try {
 
 
-      let userData = {
+      const userData = {
         
           candidateId: newUserDetails?.id,
           name:newUserDetails?.name,

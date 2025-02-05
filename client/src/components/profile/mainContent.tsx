@@ -228,7 +228,7 @@ export function MainContent() {
 
 
   const handleExtractedSkills = async(skills)=>{
-    let formData = {
+    const formData = {
       skills: skills
     }
 
@@ -375,7 +375,7 @@ export function MainContent() {
 
   const handleAddSkill = async () => {
 
-    let formData = {
+    const formData = {
       skills: [...userData.skills, newSkill]
     }
 
@@ -404,7 +404,7 @@ export function MainContent() {
   const handleSubmit2 = async (e)=>{
     e.preventDefault();
 
-    let formData = {
+    const formData = {
       tenthMarks: e.target.marks10th.value,
       twelfthMarks: e.target.marks12th.value,
       gateScore: e.target.gateScore.value,
@@ -427,7 +427,7 @@ export function MainContent() {
     try {
 
 
-      let userData = {
+      const userData = {
         
           candidateId: user.id,
           name:user.name,
@@ -462,7 +462,7 @@ export function MainContent() {
   const handleProfileImage = async (e)=>{
     e.preventDefault();
 
-    let file = e.target.profileImage.files[0];
+    const file = e.target.profileImage.files[0];
     if (!file) {
       toast.error('Please select a file to upload');
       return;
